@@ -112,7 +112,7 @@ export default function Home() {
       <div className="flex justify-between flex-col gap-10 items-center py-2 w-72">
         <div className="flex flex-col">
           <span className="font-light">Welcome back to</span>
-          <h1 className="text-2xl font-bold">SpringUsers</h1>
+          <h1 className="text-2xl font-bold">Library</h1>
         </div>
 
         <div className="flex gap-3 flex-col w-full h-full items-center">
