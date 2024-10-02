@@ -1,4 +1,4 @@
-# Spring Users
+# Library
 
 ## Getting Started
 To getting started you must have the following requirements
