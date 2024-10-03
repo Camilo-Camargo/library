@@ -38,14 +38,11 @@ export function StudentItem(props: StudentItemProps) {
 
     const res = await apiPutFormData("/api/student", formData);
     const resData = await res.json();
-    console.log(resData);
     props.onChange && props.onChange();
   };
   const onDelete = async () => {
-    console.log("deleting...");
     const res = await apiDelete("/api/student", { id: props.data.id });
     const resData = await res.json();
-    console.log(resData);
     props.onChange && props.onChange();
   };
 

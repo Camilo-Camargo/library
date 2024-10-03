@@ -20,7 +20,6 @@ export function Borrows() {
     
     const resData = await res.json();
     setBooks(resData);
-    console.log(resData);
   };
 
   useEffect(() => {

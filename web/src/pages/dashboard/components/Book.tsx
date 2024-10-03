@@ -37,20 +37,16 @@ export function BookItem(props: BookItemProps) {
     formData.append("title", title);
     formData.append("author", author);
     formData.append("quantity", quantity.toString());
-    console.log(cover);
     if(typeof cover !== "string") formData.append("cover", cover);
     formData.append("location", location);
 
     const res = await apiPutFormData("/api/book", formData);
     const resData = await res.json();
-    console.log(resData);
     props.onChange && props.onChange();
   };
   const onDelete = async () => {
-    console.log("deleting...");
     const res = await apiDelete("/api/book", { id: props.data.id });
     const resData = await res.json();
-    console.log(resData);
     props.onChange && props.onChange();
   };
   const onReserve = async () => {
@@ -61,13 +57,11 @@ export function BookItem(props: BookItemProps) {
       returnDate: returnDate,
     });
     const resData = await res.json();
-    console.log(resData);
     props.onChange && props.onChange();
   };
   const onUnreserve = async () => {
     const res = await apiDelete(`/api/borrow/${props.data.id}`);
     const resData = await res.json();
-    console.log(resData);
     props.onChange && props.onChange();
   };
 
@@ -79,12 +73,10 @@ export function BookItem(props: BookItemProps) {
     });
 
     if(res.status != 200){
-      console.log(await res.text());
       return;
     }
 
     const resData = await res.json();
-    console.log(resData);
     props.onChange && props.onChange();
   };
 
