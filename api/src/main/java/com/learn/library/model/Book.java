@@ -22,10 +22,12 @@ public class Book {
   public Book(
       String title,
       String author,
+      String cover,
       int quantity,
       String location) {
     this.title = title;
     this.author = author;
+    this.cover = cover;
     this.quantity = quantity;
     this.location = location;
   }
@@ -39,6 +41,9 @@ public class Book {
 
   @Column
   private String author;
+
+  @Column
+  private String cover;
 
   @Column
   private int quantity;

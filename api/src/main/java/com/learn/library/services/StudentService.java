@@ -80,4 +80,14 @@ public class StudentService implements IStudentService {
 		return borrow;
 	}
 
+	@Override
+	public Student findByUserId(Long id) {
+		return repository.findByUserId(id);
+	}
+
+	@Override
+	public List<Student> findAll() {
+		return repository.findAll();
+	}
+
 }

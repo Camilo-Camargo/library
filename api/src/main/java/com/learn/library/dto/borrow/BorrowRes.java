@@ -18,7 +18,10 @@ import lombok.NoArgsConstructor;
 public class BorrowRes {
     private Long id;
     private BookRes book;
+    private String title;
+    private String author;
     private StudentRes student;
+    private String cover;
     private int quantity;
     private LocalDate returnDate;
 
@@ -27,7 +30,10 @@ public class BorrowRes {
         return new BorrowRes(
                 borrow.getId(),
                 BookRes.fromEntity(borrow.getBook()),
+                borrow.getBook().getAuthor(),
+                borrow.getBook().getTitle(),
                 StudentRes.fromEntity(borrow.getStudent()),
+                borrow.getBook().getCover(),
                 borrow.getQuantity(),
                 borrow.getReturnDate());
     }

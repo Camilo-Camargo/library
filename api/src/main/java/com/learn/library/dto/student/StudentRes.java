@@ -17,6 +17,7 @@ public class StudentRes {
     private Long id;
     private String username;
     private String identification;
+    private String password;
     private String fullname;
     private String role;
     private String profileImage;
@@ -28,6 +29,7 @@ public class StudentRes {
                 user.getId(),
                 user.getUsername(),
                 user.getIdentification(),
+                user.getPassword(),
                 user.getFullname(),
                 user.getRole(),
                 user.getProfileImage(),

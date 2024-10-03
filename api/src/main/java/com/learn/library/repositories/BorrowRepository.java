@@ -9,6 +9,6 @@ import org.springframework.data.repository.query.Param;
 import com.learn.library.model.Borrow;
 
 public interface BorrowRepository extends JpaRepository<Borrow, Long> {
-    @Query("SELECT b FROM Borrow b WHERE b.student.user.id = :studentId")
+    @Query("SELECT b FROM Borrow b WHERE b.student.id = :studentId")
     List<Borrow> findAllByStudentId(@Param("studentId") Long studentId);
 }

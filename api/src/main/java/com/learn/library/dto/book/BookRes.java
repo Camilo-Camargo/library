@@ -15,6 +15,7 @@ public class BookRes {
     private Long id;
     public String title;
     public String author;
+    public String cover;
     public int quantity;
     public String location;
 
@@ -23,6 +24,7 @@ public class BookRes {
                 book.getId(),
                 book.getTitle(),
                 book.getAuthor(),
+                book.getCover(),
                 book.getQuantity(),
                 book.getLocation());
     }

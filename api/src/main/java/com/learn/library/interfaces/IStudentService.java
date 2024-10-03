@@ -9,6 +9,8 @@ import com.learn.library.model.Student;
 public interface IStudentService {
 	public Borrow borrowBook(Student student, Long bookId, int quantity);
 
+	public List<Student> findAll();
+
 	public Student create(Student student);
 
 	public void update(Student student);
@@ -16,6 +18,8 @@ public interface IStudentService {
 	public void delete(Student student);
 
 	public Student findById(Long id);
+
+	public Student findByUserId(Long id);
 
 	public List<Borrow> findAllBorrowsById(Long id);
 }

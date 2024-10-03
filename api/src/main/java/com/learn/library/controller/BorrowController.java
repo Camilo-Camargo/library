@@ -1,9 +1,12 @@
 package com.learn.library.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -31,11 +34,16 @@ public class BorrowController {
     @Autowired
     private BookService bookService;
 
+    @GetMapping("api/borrow")
+    public ResponseEntity<List<BorrowRes>> findAll() {
+        return ResponseEntity.status(HttpStatus.OK).body(BorrowRes.fromEntities(service.findAll()));
+    }
+
     @PostMapping("api/borrow")
     public ResponseEntity<BorrowRes> create(
             @RequestBody CreateBorrowReq req) {
 
-        Student student = studentService.findById(req.studentId);
+        Student student = studentService.findByUserId(req.studentId);
 
         Borrow borrow;
 
@@ -55,17 +63,22 @@ public class BorrowController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        Book book = borrow.getBook();
-        if (book.getQuantity() < req.quantity) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        if (borrow.getQuantity() == req.quantity) {
+            return ResponseEntity.ok().build();
         }
 
-        borrow.setQuantity(borrow.getQuantity() + req.quantity);
+        Book book = borrow.getBook();
+
+        int diff = req.quantity - borrow.getQuantity();
+
+        borrow.setQuantity(borrow.getQuantity() + diff);
+
         if (borrow.getQuantity() < 1) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         }
 
-        book.setQuantity(book.getQuantity() - req.quantity);
+        book.setQuantity(book.getQuantity() - diff);
+
         borrow.setReturnDate(req.returnDate);
         service.update(borrow);
         bookService.update(book);

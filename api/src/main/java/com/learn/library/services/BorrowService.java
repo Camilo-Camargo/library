@@ -43,4 +43,9 @@ public class BorrowService implements IBorrowService {
 	public List<Borrow> findAllByStudentId(Long studentId) {
 		return repository.findAllByStudentId(studentId);
 	}
+
+	@Override
+	public List<Borrow> findAll() {
+		return repository.findAll();
+	}
 }

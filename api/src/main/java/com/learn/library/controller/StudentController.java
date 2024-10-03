@@ -1,16 +1,18 @@
 package com.learn.library.controller;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,11 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.learn.library.dto.UserLoginReq;
 import com.learn.library.dto.borrow.BorrowRes;
 import com.learn.library.dto.student.StudentRes;
 import com.learn.library.dto.student.DeleteStudentReq;
-import com.learn.library.dto.student.UpdateStudentReq;
 import com.learn.library.model.Borrow;
 import com.learn.library.model.Student;
 import com.learn.library.model.User;
@@ -42,9 +42,15 @@ public class StudentController {
     @Autowired
     private FileService fileService;
 
+    @GetMapping(value = "api/student")
+    public ResponseEntity<List<StudentRes>> findAll() {
+        return ResponseEntity.status(HttpStatus.FOUND).body(StudentRes.fromEntities(service.findAll()));
+    }
+
     @GetMapping(value = "api/student/{id}/borrow")
     public ResponseEntity<List<BorrowRes>> findBorrows(@PathVariable Long id) {
-        List<Borrow> borrows = service.findAllBorrowsById(id);
+        Student student = service.findByUserId(id);
+        List<Borrow> borrows = service.findAllBorrowsById(student.getId());
         if (borrows == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         return ResponseEntity.status(HttpStatus.FOUND).body(BorrowRes.fromEntities(borrows));
@@ -52,7 +58,7 @@ public class StudentController {
 
     @GetMapping("api/student/{id}")
     public ResponseEntity<StudentRes> getById(@PathVariable Long id) {
-        Student student = service.findById(id);
+        Student student = service.findByUserId(id);
         User user = userService.findById(id);
         student.setUser(user);
         if (student == null || user == null) {
@@ -61,37 +67,65 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.FOUND).body(StudentRes.fromEntity(student));
     }
 
-    @PutMapping("api/student")
+    @RequestMapping(value = "/api/student", method = RequestMethod.PUT, consumes = {
+            MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<StudentRes> update(
-            @RequestBody UpdateStudentReq req) {
-        User userFound = userService.findById(req.id);
-        Student student = service.findById(req.id);
-        if (userFound == null || student == null) {
+            @RequestParam("id") Long id,
+            @RequestParam("fullname") String fullname,
+            @RequestParam("identification") String identification,
+            @RequestParam("password") String password,
+            @RequestParam("grade") int grade,
+            @RequestParam(value = "profileImage", required = false) MultipartFile image) {
+
+        Student studentFound = service.findByUserId(id);
+        if (studentFound == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        User user = new User();
-        user.setId(req.id);
-        user.setFullname(req.fullname);
 
-        userFound.setFullname(req.fullname);
-        service.update(student);
-        userService.update(user);
-        student.setUser(userFound);
-        return ResponseEntity.status(HttpStatus.OK).body(StudentRes.fromEntity(student));
+        User user = studentFound.getUser();
+        String imagePath = studentFound.getUser().getProfileImage();
+
+        if (image != null) {
+            String originalFilename = image.getOriginalFilename();
+            String extension = "";
+
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            String timestamp = String.valueOf(Instant.now().toEpochMilli());
+
+            imagePath = "books/" + timestamp + extension;
+
+            try {
+                imagePath = "/" + fileService.saveFile(image, imagePath);
+            } catch (IOException e) {
+                System.err.println("File upload failed: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
+        }
+
+        user.setIdentification(identification);
+        user.setFullname(fullname);
+        user.setPassword(password);
+        user.setProfileImage(imagePath);
+        userService.create(user);
+
+        studentFound.setGrade(grade);
+        service.update(studentFound);
+        return ResponseEntity.status(HttpStatus.CREATED).body(StudentRes.fromEntity(studentFound));
     }
+    
 
     @DeleteMapping("api/student")
     public ResponseEntity<StudentRes> delete(
             @RequestBody DeleteStudentReq req) {
-        User userFound = userService.findById(req.id);
-        Student student = service.findById(req.id);
-        if (userFound == null || student == null) {
+        Student student = service.findByUserId(req.id);
+        if (student == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-
-        student.setUser(userFound);
-        userService.delete(userFound);
         service.delete(student);
+        userService.delete(student.getUser());
         return ResponseEntity.status(HttpStatus.OK).body(StudentRes.fromEntity(student));
     }
 
@@ -104,11 +138,22 @@ public class StudentController {
             @RequestParam("grade") int grade,
             @RequestParam("profileImage") MultipartFile image) {
 
-        String imagePath = image.getOriginalFilename();
+        String originalFilename = image.getOriginalFilename();
+        String extension = "";
+
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
+        String timestamp = String.valueOf(Instant.now().toEpochMilli());
+
+        String imagePath = "books/" + timestamp + extension;
+
         try {
-            imagePath = "/" + fileService.saveFile(image, identification + "/" + imagePath);
+            imagePath = "/" + fileService.saveFile(image, imagePath);
         } catch (IOException e) {
-            System.out.println(e);
+            System.err.println("File upload failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
 
         String username = userService.generateUsername(fullname, identification);
@@ -122,19 +167,6 @@ public class StudentController {
         student.setUser(user);
         service.create(student);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(StudentRes.fromEntity(student));
-    }
-
-    @PostMapping
-    @RequestMapping(value = "api/login", consumes = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<StudentRes> login(
-            @RequestBody UserLoginReq req) {
-        User user = userService.login(req.username, req.password);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        Student student = service.findById(user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(StudentRes.fromEntity(student));
     }
 }

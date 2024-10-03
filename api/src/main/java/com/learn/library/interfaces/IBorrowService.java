@@ -7,6 +7,8 @@ import com.learn.library.model.Borrow;
 public interface IBorrowService {
 	public Borrow create(Borrow borrow);
 
+	public List<Borrow> findAll();
+
 	public void update(Borrow borrow);
 
 	public void delete(Borrow borrow);
