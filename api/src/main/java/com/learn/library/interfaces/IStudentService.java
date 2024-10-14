@@ -19,6 +19,8 @@ public interface IStudentService {
 
 	public Student findById(Long id);
 
+	public Student findByCode(String code);
+
 	public Student findByUserId(Long id);
 
 	public List<Borrow> findAllBorrowsById(Long id);

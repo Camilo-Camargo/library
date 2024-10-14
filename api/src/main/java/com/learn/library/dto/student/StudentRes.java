@@ -25,6 +25,7 @@ public class StudentRes {
     private String profileImage;
     private int grade;
     private String code;
+    private int age;
 
     public static StudentRes fromEntity(Student student) {
         User user = student.getUser();
@@ -38,7 +39,8 @@ public class StudentRes {
                 user.getRole(),
                 user.getProfileImage(),
                 student.getGrade(),
-                student.getCode()
+                student.getCode(),
+                user.getAge()
                 );
     }
 

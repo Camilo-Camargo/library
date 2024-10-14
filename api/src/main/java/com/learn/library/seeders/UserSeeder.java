@@ -21,7 +21,7 @@ public class UserSeeder implements ApplicationRunner {
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		log.info("Running user seeder...");
-		User user = new User("0", UserIdentificationType.NAN, "admin", "admin", "admin", "admin", "");
+		User user = new User("0", UserIdentificationType.NAN, "admin", "admin", "admin", "admin", -1, "");
 		userService.create(user);
 	}
 }

@@ -19,11 +19,12 @@ public class UserRes implements Serializable {
     private String identification;
     private String fullname;
     private String role;
+    private int age;
     private String profileImage;
 
     public static UserRes fromEntity(User user) {
         return new UserRes(user.getId(), user.getUsername(), user.getIdentification(), user.getFullname(),
-                user.getRole(),user.getProfileImage());
+                user.getRole(),user.getAge(),user.getProfileImage());
     }
 
     public static List<UserRes> fromEntities(List<User> users) {

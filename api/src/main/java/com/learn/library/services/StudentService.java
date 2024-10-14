@@ -90,4 +90,9 @@ public class StudentService implements IStudentService {
 		return repository.findAll();
 	}
 
+	@Override
+	public Student findByCode(String code) {
+		return repository.findByCode(code);
+	}
+
 }

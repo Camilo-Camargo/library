@@ -1,8 +1,13 @@
 package com.learn.library.controller;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvException;
+
+import java.io.InputStreamReader;
+import java.util.List;
+
 import java.io.IOException;
 import java.time.Instant;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -49,8 +54,6 @@ public class BookController {
         }
         return ResponseEntity.status(HttpStatus.FOUND).body(BookRes.fromEntities(book));
     }
-
-
 
     @GetMapping("api/book")
     public ResponseEntity<List<BookRes>> findAll() {
@@ -137,6 +140,49 @@ public class BookController {
         bookFound.setCover(imagePath);
         service.update(bookFound);
         return ResponseEntity.status(HttpStatus.OK).body(BookRes.fromEntity(bookFound));
+    }
+
+    @PostMapping(value = "api/book/from-files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> fromFiles(@RequestParam("files") MultipartFile[] files) {
+        if (files.length == 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) {
+                continue;
+            }
+
+            try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
+                String[] header = reader.readNext();
+
+                List<String[]> rows = reader.readAll();
+
+                for (String[] row : rows) {
+                    if (row.length < 3) {
+                        continue;
+                    }
+
+                    String author = row[0].trim();
+                    String title = row[1].trim();
+                    int quantity = Integer.parseInt(row[2].trim());
+
+                    String coverPath = "/default/path/to/cover.jpg";
+                    String location = "Default Location";
+
+                    Book book = new Book(title, author, coverPath, quantity, location);
+                    service.create(book);
+                }
+            } catch (IOException | CsvException e) {
+                System.err.println("Error reading CSV file: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid quantity in CSV: " + e.getMessage());
+                return ResponseEntity.badRequest().build();
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @DeleteMapping("api/book")

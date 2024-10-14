@@ -18,6 +18,7 @@ export type StudentItemProps = {
 export function StudentItem(props: StudentItemProps) {
   const [fullname, setFullname] = useState(props.data.fullname);
   const [code, setCode] = useState(props.data.code);
+  const [age, setAge] = useState(props.data.age);
   const [identification, setIdentification] = useState(props.data.identification);
   const [grade, setGrade] = useState(props.data.grade);
   const [profileImage, setProfileImage] = useState<string | File>(props.data.profileImage);
@@ -30,6 +31,7 @@ export function StudentItem(props: StudentItemProps) {
     formData.append("identification", identification);
     formData.append("identificationType", identificationType!.toString());
     formData.append("code", code);
+    formData.append("age", age.toString());
     formData.append("grade", grade.toString());
 
     if (typeof profileImage !== "string") {
@@ -104,6 +106,16 @@ export function StudentItem(props: StudentItemProps) {
           onChange={(e) => {
             setCode(e.target.value);
           }}
+        />
+
+        <input
+          className="focus:outline-none border p-1 rounded focus:ring-1"
+          placeholder="Age"
+          type="number"
+          value={age}
+          min={1}
+          max={100}
+          onChange={(e) => setAge(parseInt(e.target.value))}
         />
 
         <select

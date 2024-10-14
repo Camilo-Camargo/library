@@ -17,6 +17,7 @@ export type User = {
   identification: string;
   identificationType: UserIdentificationType;
   code: string;
+  age: number;
   fullname: string;
   role: string;
   profileImage: string;

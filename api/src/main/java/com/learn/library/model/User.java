@@ -21,6 +21,7 @@ public class User {
       String username,
       String password,
       String role,
+      int age,
       String profileImage) {
     this.identification = identification;
     this.identificationType = identificationType;
@@ -28,6 +29,7 @@ public class User {
     this.username = username;
     this.password = password;
     this.role = role;
+    this.age = age;
     this.profileImage = profileImage;
   }
 
@@ -56,4 +58,7 @@ public class User {
 
   @Column
   private String role;
+
+  @Column 
+  private int age;
 }
