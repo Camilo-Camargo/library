@@ -22,8 +22,10 @@ public class Student {
 
   public Student(
       int grade,
+      String code,
       User user) {
     this.grade = grade;
+    this.code = code;
     this.user = user;
   }
 
@@ -36,9 +38,18 @@ public class Student {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
-  private List<Borrow> borrows;
-
   @Column
   private int grade;
+
+  @Column
+  private String code;
+
+  @Column(nullable = true)
+  private String contactPhoneNumber;
+
+  @Column(nullable = true)
+  private String contact2PhoneNumber;
+
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "student")
+  private List<Borrow> borrows;
 }

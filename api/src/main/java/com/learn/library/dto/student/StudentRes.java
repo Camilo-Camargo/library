@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.learn.library.model.Student;
 import com.learn.library.model.User;
+import com.learn.library.model.UserIdentificationType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,11 +18,13 @@ public class StudentRes {
     private Long id;
     private String username;
     private String identification;
+    private UserIdentificationType identificationType;
     private String password;
     private String fullname;
     private String role;
     private String profileImage;
     private int grade;
+    private String code;
 
     public static StudentRes fromEntity(Student student) {
         User user = student.getUser();
@@ -29,11 +32,14 @@ public class StudentRes {
                 user.getId(),
                 user.getUsername(),
                 user.getIdentification(),
+                user.getIdentificationType(),
                 user.getPassword(),
                 user.getFullname(),
                 user.getRole(),
                 user.getProfileImage(),
-                student.getGrade());
+                student.getGrade(),
+                student.getCode()
+                );
     }
 
     public static List<StudentRes> fromEntities(List<Student> students) {

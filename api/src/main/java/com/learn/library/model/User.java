@@ -16,12 +16,14 @@ public class User {
 
   public User(
       String identification,
+      UserIdentificationType identificationType,
       String fullname,
       String username,
       String password,
       String role,
       String profileImage) {
     this.identification = identification;
+    this.identificationType = identificationType;
     this.fullname = fullname;
     this.username = username;
     this.password = password;
@@ -38,12 +40,15 @@ public class User {
   private String identification;
 
   @Column
+  private UserIdentificationType identificationType;
+
+  @Column
   private String fullname;
 
   @Column
   private String username;
 
-  @Column
+  @Column(nullable = true)
   private String password;
 
   @Column(name = "profile_image")

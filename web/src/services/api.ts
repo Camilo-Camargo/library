@@ -1,5 +1,5 @@
 export function apiHTTPURL(path: string) {
-  return `${import.meta.env.VITE_API_URL}/${path}`;
+  return `${import.meta.env.VITE_API_URL}${path}`;
 }
 
 export async function apiGet(path: string) {

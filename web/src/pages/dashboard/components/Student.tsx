@@ -8,6 +8,7 @@ import { User } from "../../../types/book";
 import { handleUpload } from "../../../utils/Handlers";
 import { Button } from "../../../components/Button";
 import { Counter } from "../../../components/Counter";
+import { UserIdentificationType } from "../../../types/enum"; // Import the enum
 
 export type StudentItemProps = {
   data: User;
@@ -16,30 +17,30 @@ export type StudentItemProps = {
 
 export function StudentItem(props: StudentItemProps) {
   const [fullname, setFullname] = useState(props.data.fullname);
-  const [password, setPassword] = useState(props.data.password);
-  const [identification, setIdentification] = useState(
-    props.data.identification
-  );
+  const [code, setCode] = useState(props.data.code);
+  const [identification, setIdentification] = useState(props.data.identification);
   const [grade, setGrade] = useState(props.data.grade);
-  const [profileImage, setProfileImage] = useState<string | File>(
-    props.data.profileImage
-  );
+  const [profileImage, setProfileImage] = useState<string | File>(props.data.profileImage);
+  const [identificationType, setIdentificationType] = useState<UserIdentificationType | null>(props.data.identificationType);
 
   const onUpdate = async () => {
     const formData = new FormData();
     formData.append("id", props.data.id.toString());
     formData.append("fullname", fullname);
     formData.append("identification", identification);
-    formData.append("password", password);
+    formData.append("identificationType", identificationType!.toString());
+    formData.append("code", code);
     formData.append("grade", grade.toString());
 
-    if (typeof profileImage !== "string")
+    if (typeof profileImage !== "string") {
       formData.append("profileImage", profileImage);
+    }
 
     const res = await apiPutFormData("/api/student", formData);
     const resData = await res.json();
     props.onChange && props.onChange();
   };
+
   const onDelete = async () => {
     const res = await apiDelete("/api/student", { id: props.data.id });
     const resData = await res.json();
@@ -60,6 +61,7 @@ export function StudentItem(props: StudentItemProps) {
                 ? apiResourceUrl(profileImage)
                 : URL.createObjectURL(profileImage)
             }
+            alt="Profile"
           />
         )}
 
@@ -79,8 +81,8 @@ export function StudentItem(props: StudentItemProps) {
 
         <input
           className="focus:outline-none border p-1 rounded focus:ring-1"
-          placeholder="Title"
-          defaultValue={fullname}
+          placeholder="Full Name"
+          value={fullname}
           onChange={(e) => {
             setFullname(e.target.value);
           }}
@@ -88,22 +90,38 @@ export function StudentItem(props: StudentItemProps) {
 
         <input
           className="focus:outline-none border p-1 rounded focus:ring-1"
-          placeholder="Author"
-          defaultValue={identification}
+          placeholder="Identification"
+          value={identification}
           onChange={(e) => {
             setIdentification(e.target.value);
           }}
         />
-      </div>
 
-      <input
-        className="focus:outline-none border p-1 rounded focus:ring-1"
-        placeholder="Password"
-        defaultValue={password}
-        onChange={(e) => {
-          setFullname(e.target.value);
-        }}
-      />
+        <input
+          className="focus:outline-none border p-1 rounded focus:ring-1"
+          placeholder="Code"
+          value={code}
+          onChange={(e) => {
+            setCode(e.target.value);
+          }}
+        />
+
+        <select
+          id="user-identification-type"
+          value={identificationType || ''}
+          className="border p-2 rounded focus:outline-none focus:ring-1"
+          onChange={(e) => {
+            setIdentificationType(e.target.value as UserIdentificationType);
+          }}
+        >
+          <option value="" disabled>Select Identification Type</option>
+          {Object.values(UserIdentificationType).map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="flex flex-col gap-2">
         <Counter

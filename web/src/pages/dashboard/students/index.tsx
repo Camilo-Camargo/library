@@ -7,6 +7,7 @@ import { User } from "../../../types/book";
 import { handleUpload } from "../../../utils/Handlers";
 import { Counter } from "../../../components/Counter";
 import { StudentItem } from "../components/Student";
+import { UserIdentificationType } from "../../../types/enum";
 
 export function Students() {
   const navigate = useNavigate();
@@ -15,9 +16,11 @@ export function Students() {
   const [students, setStudents] = useState<User[]>([]);
 
   const [fullname, setFullname] = useState("");
-  const [password, setPassword] = useState("");
   const [grade, setGrade] = useState(1);
   const [identification, setIdentification] = useState("");
+  const [identificationType, setIdentificationType] = useState<UserIdentificationType>();
+  const [code, setCode] = useState("");
+
   const [profileImage, setProfileImage] = useState<File | null>();
 
   const getStudents = async () => {
@@ -29,8 +32,9 @@ export function Students() {
   const handleCreate = async () => {
     const formData = new FormData();
     formData.append("fullname", fullname);
-    formData.append("password", password);
     formData.append("identification", identification);
+    formData.append("identificationType", identificationType!.toString());
+    formData.append("code", code);
     formData.append("grade", grade.toString());
     formData.append("profileImage", profileImage!);
 
@@ -63,13 +67,13 @@ export function Students() {
             )}
             {!profileImage && (
               <div
-                className="flex justify-center items-center bg-slate-900 text-slate-50 text-center w-[120px] h-[120px]  rounded-lg m-auto border-dashed border"
+                className="flex justify-center items-center bg-slate-900 text-slate-50 text-center w-[120px] h-[120px]  rounded-lg m-auto border-dashed border cursor-pointer"
                 onClick={async () => {
                   // TODO: Remove casting
                   setProfileImage((await handleUpload()) as File);
                 }}
               >
-                <span className="font-bold">Upload Cover</span>
+                <span className="font-bold">Upload Photo</span>
               </div>
             )}
           </div>
@@ -82,9 +86,9 @@ export function Students() {
           />
           <input
             className="focus:outline-none border p-1 rounded focus:ring-1"
-            placeholder="Password"
+            placeholder="Code"
             onChange={(e) => {
-              setPassword(e.target.value);
+              setCode(e.target.value);
             }}
           />
           <input
@@ -94,6 +98,21 @@ export function Students() {
               setIdentification(e.target.value);
             }}
           />
+          <select
+            id="user-identification-type"
+            value={identificationType || ''}
+            className="block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500 focus:border-blue-500"
+            onChange={(e) => {
+              setIdentificationType(e.target.value as UserIdentificationType);
+            }}
+          >
+            <option value="" disabled>Select User Identification Type</option>
+            {Object.values(UserIdentificationType).map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
           <div className="flex flex-col">
             <span>Grade</span>
             <Counter min={1} max={12} onChange={(c) => setGrade(c)} />

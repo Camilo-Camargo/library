@@ -40,6 +40,11 @@ public class BookService implements IBookService {
 	}
 
 	@Override
+	public List<Book> findAll(){
+		return repository.findAll();
+	}
+
+	@Override
 	public List<Book> findAvailables() {
 		return repository.findAvailables();
 	}

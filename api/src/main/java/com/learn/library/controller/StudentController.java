@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -27,6 +26,7 @@ import com.learn.library.dto.student.DeleteStudentReq;
 import com.learn.library.model.Borrow;
 import com.learn.library.model.Student;
 import com.learn.library.model.User;
+import com.learn.library.model.UserIdentificationType;
 import com.learn.library.services.FileService;
 import com.learn.library.services.StudentService;
 import com.learn.library.services.UserService;
@@ -73,7 +73,8 @@ public class StudentController {
             @RequestParam("id") Long id,
             @RequestParam("fullname") String fullname,
             @RequestParam("identification") String identification,
-            @RequestParam("password") String password,
+            @RequestParam("identificationType") UserIdentificationType identificationType,
+            @RequestParam("code") String code,
             @RequestParam("grade") int grade,
             @RequestParam(value = "profileImage", required = false) MultipartFile image) {
 
@@ -106,16 +107,16 @@ public class StudentController {
         }
 
         user.setIdentification(identification);
+        user.setIdentificationType(identificationType);
         user.setFullname(fullname);
-        user.setPassword(password);
         user.setProfileImage(imagePath);
         userService.create(user);
 
         studentFound.setGrade(grade);
+        studentFound.setCode(code);
         service.update(studentFound);
         return ResponseEntity.status(HttpStatus.CREATED).body(StudentRes.fromEntity(studentFound));
     }
-    
 
     @DeleteMapping("api/student")
     public ResponseEntity<StudentRes> delete(
@@ -134,36 +135,41 @@ public class StudentController {
     public ResponseEntity<StudentRes> create(
             @RequestParam("fullname") String fullname,
             @RequestParam("identification") String identification,
-            @RequestParam("password") String password,
+            @RequestParam("identificationType") UserIdentificationType identificationType,
+            @RequestParam("code") String code,
             @RequestParam("grade") int grade,
-            @RequestParam("profileImage") MultipartFile image) {
+            @RequestParam(value = "profileImage", required = false) MultipartFile image) {
 
-        String originalFilename = image.getOriginalFilename();
-        String extension = "";
+        String imagePath = "";
+        if (image != null) {
+            String originalFilename = image.getOriginalFilename();
+            String extension = "";
 
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
 
-        String timestamp = String.valueOf(Instant.now().toEpochMilli());
+            String timestamp = String.valueOf(Instant.now().toEpochMilli());
 
-        String imagePath = "books/" + timestamp + extension;
+            imagePath = "books/" + timestamp + extension;
 
-        try {
-            imagePath = "/" + fileService.saveFile(image, imagePath);
-        } catch (IOException e) {
-            System.err.println("File upload failed: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            try {
+                imagePath = "/" + fileService.saveFile(image, imagePath);
+            } catch (IOException e) {
+                System.err.println("File upload failed: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
         }
 
         String username = userService.generateUsername(fullname, identification);
 
-        User user = new User(identification, fullname, username, password, "student", imagePath);
+        User user = new User(identification, identificationType, fullname, username, null, "student", imagePath);
         userService.create(user);
 
         Student student = new Student();
         student.setId(user.getId());
         student.setGrade(grade);
+        student.setCode(code);
         student.setUser(user);
         service.create(student);
 

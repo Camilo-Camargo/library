@@ -41,9 +41,20 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.FOUND).body(BookRes.fromEntity(book));
     }
 
+    @GetMapping("api/book/availables")
+    public ResponseEntity<List<BookRes>> findAvailables() {
+        List<Book> book = service.findAvailables();
+        if (book == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.status(HttpStatus.FOUND).body(BookRes.fromEntities(book));
+    }
+
+
+
     @GetMapping("api/book")
     public ResponseEntity<List<BookRes>> findAll() {
-        List<Book> book = service.findAvailables();
+        List<Book> book = service.findAll();
         if (book == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }

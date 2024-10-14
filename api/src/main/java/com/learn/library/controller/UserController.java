@@ -22,7 +22,6 @@ public class UserController {
     @Autowired
     private UserService service;
 
-
     @PostMapping
     @RequestMapping(value = "api/login", consumes = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<UserRes> login(
@@ -32,12 +31,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(UserRes.fromEntity(user));
-    }
-
-    @PostMapping("api/create-admin")
-    public ResponseEntity<UserRes> createAdmin() {
-        User user = service.create(new User("0", "admin", "admin", "admin", "admin", "admin"));
-        return ResponseEntity.status(HttpStatus.FOUND).body(UserRes.fromEntity(user));
     }
 
     @GetMapping("api/users")

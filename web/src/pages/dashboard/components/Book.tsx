@@ -20,7 +20,7 @@ export type BookItemProps = {
 };
 
 export function BookItem(props: BookItemProps) {
-  const [user, _setUser] = useAtom(UserAtom);
+  const [user] = useAtom(UserAtom);
 
   const [title, setTitle] = useState(props.data.title);
   const [author, setAuthor] = useState(props.data.author);
@@ -37,18 +37,18 @@ export function BookItem(props: BookItemProps) {
     formData.append("title", title);
     formData.append("author", author);
     formData.append("quantity", quantity.toString());
-    if(typeof cover !== "string") formData.append("cover", cover);
+    if (typeof cover !== "string") formData.append("cover", cover);
     formData.append("location", location);
 
     const res = await apiPutFormData("/api/book", formData);
-    const resData = await res.json();
-    props.onChange && props.onChange();
+    if (res.ok) props.onChange && props.onChange();
   };
+
   const onDelete = async () => {
     const res = await apiDelete("/api/book", { id: props.data.id });
-    const resData = await res.json();
-    props.onChange && props.onChange();
+    if (res.ok) props.onChange && props.onChange();
   };
+
   const onReserve = async () => {
     const res = await apiPost("/api/borrow", {
       studentId: user!.id,
@@ -56,13 +56,12 @@ export function BookItem(props: BookItemProps) {
       quantity: quantity,
       returnDate: returnDate,
     });
-    const resData = await res.json();
-    props.onChange && props.onChange();
+    if (res.ok) props.onChange && props.onChange();
   };
+
   const onUnreserve = async () => {
     const res = await apiDelete(`/api/borrow/${props.data.id}`);
-    const resData = await res.json();
-    props.onChange && props.onChange();
+    if (res.ok) props.onChange && props.onChange();
   };
 
   const onBorrowUpdate = async () => {
@@ -72,47 +71,38 @@ export function BookItem(props: BookItemProps) {
       returnDate: returnDate,
     });
 
-    if(res.status != 200){
-      return;
-    }
-
-    const resData = await res.json();
-    props.onChange && props.onChange();
+    if (res.ok) props.onChange && props.onChange();
   };
 
   return (
-    <div className="flex flex-col gap-2 w-[180px]">
-      <div className="flex flex-col gap-2">
-        {user?.role === "admin"  && !props.borrow ? (
+    <div className="flex flex-col p-4 bg-white rounded-lg">
+      <div className="flex flex-col gap-2 mb-2">
+        {user?.role === "admin" && !props.borrow ? (
           <>
             <input
-              className="focus:outline-none border p-1 rounded focus:ring-1"
+              className="border p-2 rounded focus:ring focus:ring-blue-300"
               placeholder="Title"
-              defaultValue={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-              }}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
             <input
-              className="focus:outline-none border p-1 rounded focus:ring-1"
+              className="border p-2 rounded focus:ring focus:ring-blue-300"
               placeholder="Author"
-              defaultValue={author}
-              onChange={(e) => {
-                setAuthor(e.target.value);
-              }}
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
             />
           </>
         ) : (
           <>
-            <span className="font-bold">{title}</span>
-            <span className="font-thin">{author}</span>
+            <span className="font-bold text-lg">{title}</span>
+            <span className="text-gray-500">{author}</span>
           </>
         )}
       </div>
 
       {cover && (
         <img
-          className="w-[180px] h-[270px] m-auto rounded-lg object-cover"
+          className="w-full h-[270px] rounded-lg object-cover mb-2 cursor-pointer "
           onClick={async () => {
             if (props.borrow) return;
             setCover((await handleUpload()) as File);
@@ -127,9 +117,8 @@ export function BookItem(props: BookItemProps) {
 
       {!cover && (
         <div
-          className="flex justify-center items-center bg-slate-900 text-slate-50 text-center w-[180px] h-[270px] rounded-lg m-auto border border-dashed"
+          className="flex justify-center items-center text-gray-700 text-center w-full h-[270px] rounded-lg mb-2 border border-dashed cursor-pointer"
           onClick={async () => {
-            // TODO: Remove casting
             setCover((await handleUpload()) as File);
           }}
         >
@@ -140,10 +129,10 @@ export function BookItem(props: BookItemProps) {
       <div className="flex flex-col gap-2">
         {user?.role !== "admin" && (
           <input
-            defaultValue={returnDate}
+            value={returnDate}
             onChange={(e) => setReturnDate(e.target.value)}
             type="date"
-            className="w-full p-2 border rounded"
+            className="border p-2 rounded focus:ring focus:ring-blue-300"
           />
         )}
 
@@ -153,44 +142,39 @@ export function BookItem(props: BookItemProps) {
           min={1}
           onChange={(c) => setQuantity(c)}
         />
+
         {!props.borrow && (
           <input
-            className="focus:outline-none border p-1 rounded focus:ring-1"
+            className="border p-2 rounded focus:ring focus:ring-blue-300"
             placeholder="Location"
-            defaultValue={location}
-            onChange={(e) => {
-              setLocation(e.target.value);
-            }}
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
           />
         )}
       </div>
 
-      {user?.role === "admin" && props.borrow && <div className="flex gap-2">
-        <img className="w-8 h-8 rounded-full border" src={apiResourceUrl(props.data.student.profileImage)}></img>
-        <span>{props.data.student.fullname}</span>
-      </div>}
-
-      {user?.role === "admin" && !props.borrow ? (
-        <>
-          <Button title="Update" onClick={onUpdate} variant="primary" />
-          <Button title="Delete" onClick={onDelete} variant="danger-border" />
-        </>
-      ) : props.borrow ? (
-        <>
-          <Button
-            title="Update"
-            onClick={onBorrowUpdate}
-            variant="primary-border"
-          />
-          <Button
-            title="Unreserve"
-            onClick={onUnreserve}
-            variant="danger-border"
-          />
-        </>
-      ) : (
-        <Button title="Reserve" onClick={onReserve} variant="secondary" />
+      {user?.role === "admin" && props.borrow && props.data.student && (
+        <div className="flex items-center gap-2 mt-2">
+          <img className="w-8 h-8 rounded-full border" src={apiResourceUrl(props.data.student.profileImage)} alt={props.data.student.fullname} />
+          <span>{props.data.student.fullname}</span>
+        </div>
       )}
+
+      <div className="flex gap-2 mt-4">
+        {user?.role === "admin" && !props.borrow ? (
+          <>
+            <Button title="Update" onClick={onUpdate} variant="primary" />
+            <Button title="Delete" onClick={onDelete} variant="danger-border" />
+          </>
+        ) : props.borrow ? (
+          <>
+            <Button title="Update" onClick={onBorrowUpdate} variant="primary-border" />
+            <Button title="Unreserve" onClick={onUnreserve} variant="danger-border" />
+          </>
+        ) : (
+          <Button title="Reserve" onClick={onReserve} variant="secondary" />
+        )}
+      </div>
     </div>
   );
 }

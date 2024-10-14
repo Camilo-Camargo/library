@@ -1,3 +1,5 @@
+import { UserIdentificationType } from "./enum";
+
 export type Book = {
   id: number;
   title: string;
@@ -13,6 +15,8 @@ export type User = {
   id: number;
   username: string;
   identification: string;
+  identificationType: UserIdentificationType;
+  code: string;
   fullname: string;
   role: string;
   profileImage: string;
@@ -22,5 +26,6 @@ export type User = {
 
 export type Student = {
   grade: number;
+  code: string;
   user: User;
 };

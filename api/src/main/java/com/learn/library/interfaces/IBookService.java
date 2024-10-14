@@ -13,5 +13,7 @@ public interface IBookService {
 
 	public Book findById(Long id);
 
+	public List<Book> findAll();
+
 	public List<Book> findAvailables();
 }
