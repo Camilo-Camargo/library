@@ -69,26 +69,29 @@ public class BookController {
     public ResponseEntity<BookRes> create(
             @RequestParam("title") String title,
             @RequestParam("author") String author,
-            MultipartFile cover,
+            @RequestParam(value = "cover", required = false) MultipartFile cover,
             @RequestParam("quantity") int quantity,
             @RequestParam("location") String location) {
 
-        String originalFilename = cover.getOriginalFilename();
-        String extension = "";
+        String imagePath = "";
+        if (cover != null) {
+            String originalFilename = cover.getOriginalFilename();
+            String extension = "";
 
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf(".")); // Get file extension
-        }
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf(".")); // Get file extension
+            }
 
-        String timestamp = String.valueOf(Instant.now().toEpochMilli());
+            String timestamp = String.valueOf(Instant.now().toEpochMilli());
+            imagePath = "books/" + timestamp + extension;
 
-        String imagePath = "books/" + timestamp + extension;
+            try {
+                imagePath = "/" + fileService.saveFile(cover, imagePath);
+            } catch (IOException e) {
+                System.err.println("File upload failed: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
 
-        try {
-            imagePath = "/" + fileService.saveFile(cover, imagePath);
-        } catch (IOException e) {
-            System.err.println("File upload failed: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
 
         Book book = new Book(title, author, imagePath, quantity, location);
