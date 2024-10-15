@@ -5,6 +5,7 @@ import { apiGet, apiPostFormData } from "../../../services/api";
 import { Book } from "../../../types/book";
 import { Counter } from "../../../components/Counter";
 import { BookItem } from "../components/Book";
+import { handleUpload } from "../../../utils/Handlers";
 
 export function Books() {
   const [user, _setUser] = useAtom(UserAtom);
@@ -15,7 +16,7 @@ export function Books() {
   const [quantity, setQuantity] = useState(1);
   const [location, setLocation] = useState("");
   const [cover, setCover] = useState<File | null>();
-  const [files, setFiles] = useState<File[]>([]); // State for multiple files
+  const [files, setFiles] = useState<File[]>([]);
 
   const handleCreate = async () => {
     const formData = new FormData();
@@ -83,9 +84,7 @@ export function Books() {
               {!cover && (
                 <div
                   className="flex justify-center items-center bg-slate-900 text-slate-50 text-center w-[180px] h-[270px] rounded-lg m-auto border border-dashed"
-                  onClick={async () => {
-                    // Handle cover upload here if needed
-                  }}
+                  onClick={async () => setCover(await handleUpload() as File)}
                 >
                   <span className="font-bold">Upload Cover</span>
                 </div>
@@ -130,4 +129,3 @@ export function Books() {
     </div>
   );
 }
-

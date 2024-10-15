@@ -11,7 +11,7 @@ public interface IBorrowService {
 
 	public void update(Borrow borrow);
 
-	public void delete(Borrow borrow);
+	public void unBorrow(Borrow borrow);
 
 	public Borrow findById(Long id);
 

@@ -14,6 +14,7 @@ export function Borrows() {
   const [selectedBookId, setSelectedBookId] = useState<number | undefined>();
   const [returnDate, setReturnDate] = useState("");
   const [borrowedBooks, setBorrowedBooks] = useState<Book[]>([]);
+  const [observations, setObservations] = useState(""); // Fixed the typo here
   const [quantity, setQuantity] = useState(1);
   const [studentSearch, setStudentSearch] = useState("");
   const [bookSearch, setBookSearch] = useState("");
@@ -59,6 +60,7 @@ export function Borrows() {
       bookId: selectedBookId,
       quantity,
       returnDate,
+      observations, // Include observations here
     });
 
     if (res.ok) {
@@ -72,6 +74,7 @@ export function Borrows() {
     setSelectedBookId(undefined);
     setReturnDate("");
     setQuantity(1);
+    setObservations(""); // Reset observations as well
   };
 
   useEffect(() => {
@@ -164,6 +167,12 @@ export function Borrows() {
             min={1}
             max={books.find(book => book.id === selectedBookId)?.quantity || 1}
             onChange={setQuantity}
+          />
+          <textarea
+            value={observations}
+            onChange={(e) => setObservations(e.target.value)}
+            className="border p-2 rounded mb-2"
+            placeholder="Add observations (optional)"
           />
           <button
             onClick={handleBorrowBook}

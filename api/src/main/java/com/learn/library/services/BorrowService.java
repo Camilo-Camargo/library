@@ -1,5 +1,6 @@
 package com.learn.library.services;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.learn.library.interfaces.IBorrowService;
 import com.learn.library.model.Borrow;
+import com.learn.library.model.BorrowState;
 import com.learn.library.repositories.BorrowRepository;
 
 @Service
@@ -35,8 +37,12 @@ public class BorrowService implements IBorrowService {
 	}
 
 	@Override
-	public void delete(Borrow borrow) {
-		repository.delete(borrow);
+	public void unBorrow(Borrow borrow) {
+		borrow.setState(BorrowState.Returned);
+		LocalDate now = LocalDate.now();
+		borrow.setReturnedAt(now);
+		borrow.setUpdatedAt(now);
+		repository.save(borrow);
 	}
 
 	@Override

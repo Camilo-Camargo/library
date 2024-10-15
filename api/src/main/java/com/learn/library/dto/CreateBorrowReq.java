@@ -8,4 +8,5 @@ public class CreateBorrowReq implements Serializable {
 	public Long bookId;
 	public int quantity;
 	public LocalDate returnDate;
+	public String observations;
 }

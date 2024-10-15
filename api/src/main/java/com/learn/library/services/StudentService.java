@@ -3,6 +3,8 @@ package com.learn.library.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.learn.library.dto.CreateBorrowReq;
+import com.learn.library.dto.book.CreateBookReq;
 import com.learn.library.interfaces.IStudentService;
 import com.learn.library.model.Book;
 import com.learn.library.model.Borrow;
@@ -56,8 +58,8 @@ public class StudentService implements IStudentService {
 		return borrowService.findAllByStudentId(id);
 	}
 
-	public Borrow borrowBook(Student student, Long bookId, int quantity) {
-		Book book = bookService.findById(bookId);
+	public Borrow borrowBook(Student student, CreateBorrowReq req) {
+		Book book = bookService.findById(req.bookId);
 
 		if (book == null) {
 			throw new IllegalArgumentException("Book doesn't exist");
@@ -67,16 +69,16 @@ public class StudentService implements IStudentService {
 			throw new IllegalArgumentException("There aren't available books to borrow.");
 		}
 
-		if (quantity > book.getQuantity()) {
+		if (req.quantity > book.getQuantity()) {
 			throw new IllegalArgumentException("Insufficient books available to borrow.");
 		}
 
 		LocalDate now = LocalDate.now();
-		Borrow borrow = new Borrow(quantity, now, book, student);
+		Borrow borrow = new Borrow(req.quantity, now, req.returnDate, req.observations, book, student);
+		borrow.setCreatedAt(now);
 		borrowService.create(borrow);
-		book.setQuantity(book.getQuantity() - quantity);
+		book.setQuantity(book.getQuantity() - req.quantity);
 		bookService.update(book);
-
 		return borrow;
 	}
 

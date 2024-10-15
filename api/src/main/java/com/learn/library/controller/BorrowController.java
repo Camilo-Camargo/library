@@ -1,8 +1,19 @@
 package com.learn.library.controller;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Font;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -48,7 +59,7 @@ public class BorrowController {
         Borrow borrow;
 
         try {
-            borrow = studentService.borrowBook(student, req.bookId, req.quantity);
+            borrow = studentService.borrowBook(student, req);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
@@ -87,7 +98,7 @@ public class BorrowController {
     }
 
     @DeleteMapping("api/borrow/{id}")
-    public ResponseEntity<BorrowRes> delete(@PathVariable Long id) {
+    public ResponseEntity<BorrowRes> unBorrow(@PathVariable Long id) {
         Borrow borrow = service.findById(id);
         if (borrow == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -97,9 +108,73 @@ public class BorrowController {
         book.setQuantity(book.getQuantity() + borrow.getQuantity());
 
         bookService.update(book);
-        service.delete(borrow);
-
+        service.unBorrow(borrow);
         return ResponseEntity.ok(BorrowRes.fromEntity(borrow));
     }
 
+    @PostMapping("api/borrow/pdf")
+    public ResponseEntity<byte[]> createPdf() {
+        List<Borrow> borrows = service.findAll();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        Document document = new Document();
+
+        try {
+            PdfWriter.getInstance(document, byteArrayOutputStream);
+            document.open();
+
+            Font smallFont = new Font(Font.FontFamily.HELVETICA, 10);
+            PdfPTable table = new PdfPTable(9);
+            table.setWidthPercentage(100);
+            table.addCell(new PdfPCell(new Phrase("ID del Préstamo", smallFont)));
+            table.addCell(new PdfPCell(new Phrase("Título del Libro", smallFont)));
+            table.addCell(new PdfPCell(new Phrase("Nombre del Estudiante", smallFont)));
+            table.addCell(new PdfPCell(new Phrase("Fecha de Préstamo", smallFont)));
+            table.addCell(new PdfPCell(new Phrase("Fecha de Devolución", smallFont)));
+            table.addCell(new PdfPCell(new Phrase("Fecha de Vencimiento", smallFont)));
+            table.addCell(new PdfPCell(new Phrase("Cantidad Prestada", smallFont)));
+            table.addCell(new PdfPCell(new Phrase("Observaciones", smallFont)));
+            table.addCell(new PdfPCell(new Phrase("Estado del Préstamo", smallFont)));
+
+            for (Borrow borrow : borrows) {
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(borrow.getId()), smallFont)));
+                table.addCell(new PdfPCell(new Phrase(borrow.getBook().getTitle(), smallFont)));
+                table.addCell(new PdfPCell(new Phrase(borrow.getStudent().getUser().getFullname(), smallFont)));
+                table.addCell(new PdfPCell(new Phrase(borrow.getBorrowDate().toString(), smallFont)));
+                table.addCell(new PdfPCell(new Phrase(
+                        borrow.getReturnedAt() != null ? borrow.getReturnedAt().toString() : "N/A", smallFont)));
+                table.addCell(new PdfPCell(new Phrase(
+                        borrow.getReturnDate() != null ? borrow.getReturnDate().toString() : "N/A", smallFont)));
+                table.addCell(new PdfPCell(new Phrase(String.valueOf(borrow.getQuantity()), smallFont)));
+                table.addCell(new PdfPCell(new Phrase(borrow.getObservations(), smallFont)));
+                String stateInSpanish;
+                switch (borrow.getState()) {
+                    case CheckOut:
+                        stateInSpanish = "Prestado";
+                        break;
+                    case Returned:
+                        stateInSpanish = "Devuelto";
+                        break;
+                    default:
+                        stateInSpanish = "Desconocido"; // Fallback for safety
+                }
+                table.addCell(new PdfPCell(new Phrase(stateInSpanish, smallFont)));
+            }
+
+            document.add(table);
+            document.close();
+
+            byte[] pdfBytes = byteArrayOutputStream.toByteArray();
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=borrows.pdf");
+
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+
+        } catch (DocumentException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } finally {
+            document.close();
+        }
+    }
 }
