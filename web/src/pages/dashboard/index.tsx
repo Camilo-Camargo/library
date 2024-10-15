@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { BookCopy, BookMarked, LogOut, Users } from "lucide-react";
+import { BookCopy, BookMarked, LogOut, PocketKnife, Users } from "lucide-react";
 import { useAtom } from "jotai";
 import { UserAtom } from "../../storage/global";
 import { apiResourceUrl } from "../../services/api";
@@ -42,6 +42,11 @@ export default function DashboardLayout() {
             icon={BookMarked}
             isActive={location.pathname === "/borrows"}
           />
+          <DashboardIcon
+            onClick={() => navigate("/generates")}
+            icon={PocketKnife}
+            isActive={location.pathname === "/generates"}
+          />
         </div>
 
         <DashboardIcon
@@ -57,6 +62,7 @@ export default function DashboardLayout() {
           {location.pathname === "/" && <span>Books</span>}
           {location.pathname === "/borrows" && <span>Borrows</span>}
           {location.pathname === "/students" && <span>Students</span>}
+          {location.pathname === "/generates" && <span>Generates</span>}
 
           <div className="flex items-center gap-2">
             <div className="flex flex-col items-end">
