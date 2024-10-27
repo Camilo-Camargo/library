@@ -61,7 +61,7 @@ client.command(['watch-project', react_code], (error, resp) => {
   // Listen for change events
   client.on('subscription', (resp) => {
     if (resp.subscription !== "reload") return;
-    child_process.exec("npm run build", {
+    child_process.exec("yarn run build", {
       cwd: react_code
     }, (error, stdout) => {
       console.log(stdout);
