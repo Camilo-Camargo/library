@@ -1,5 +1,6 @@
 package com.learn.library.repositories;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,7 @@ import com.learn.library.model.Borrow;
 public interface BorrowRepository extends JpaRepository<Borrow, Long> {
     @Query("SELECT b FROM Borrow b WHERE b.student.id = :studentId AND b.state = 0")
     List<Borrow> findAllByStudentId(@Param("studentId") Long studentId);
+   
+    @Query("SELECT b FROM Borrow b WHERE b.borrowDate BETWEEN :startDate AND :endDate")
+    List<Borrow> findBorrowsWithinDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

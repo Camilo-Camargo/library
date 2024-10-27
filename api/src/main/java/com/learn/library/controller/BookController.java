@@ -157,7 +157,7 @@ public class BookController {
             }
 
             try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
-                String[] header = reader.readNext();
+                reader.readNext();
 
                 List<String[]> rows = reader.readAll();
 

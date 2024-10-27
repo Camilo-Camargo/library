@@ -54,4 +54,14 @@ public class BorrowService implements IBorrowService {
 	public List<Borrow> findAll() {
 		return repository.findAll();
 	}
+
+	@Override
+	public List<Borrow> getAllFromLastMonth() {
+		LocalDate today = LocalDate.now();
+        LocalDate lastMonthDate = today.minusMonths(1);
+        LocalDate startOfLastMonth = lastMonthDate;
+        LocalDate endOfLastMonth = today;
+
+		return repository.findBorrowsWithinDateRange(startOfLastMonth, endOfLastMonth);
+	}
 }

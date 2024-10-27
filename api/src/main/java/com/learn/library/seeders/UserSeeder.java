@@ -23,5 +23,10 @@ public class UserSeeder implements ApplicationRunner {
 		log.info("Running user seeder...");
 		User user = new User("0", UserIdentificationType.NAN, "admin", "admin", "admin", "admin", -1, "");
 		userService.create(user);
+
+		User bibliotecaria = new User("1", UserIdentificationType.NAN, "bibliotecaria", "bibliotecaria",
+				"bibliotecaria",
+				"bibliotecaria", -1, "");
+		userService.create(bibliotecaria);
 	}
 }

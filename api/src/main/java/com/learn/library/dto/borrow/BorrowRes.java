@@ -18,14 +18,16 @@ import lombok.NoArgsConstructor;
 public class BorrowRes {
     private Long id;
     private BookRes book;
-    private String title;
     private String author;
+    private String title;
     private StudentRes student;
     private String cover;
     private int quantity;
+    private LocalDate borrowDate;
+    private LocalDate returnedAt;
     private LocalDate returnDate;
+    private String observations;
 
-    // Convert Borrow entity to BorrowRes DTO
     public static BorrowRes fromEntity(Borrow borrow) {
         return new BorrowRes(
                 borrow.getId(),
@@ -35,7 +37,10 @@ public class BorrowRes {
                 StudentRes.fromEntity(borrow.getStudent()),
                 borrow.getBook().getCover(),
                 borrow.getQuantity(),
-                borrow.getReturnDate());
+                borrow.getBorrowDate(),
+                borrow.getReturnedAt(),
+                borrow.getReturnDate(),
+                borrow.getObservations());
     }
 
     public static List<BorrowRes> fromEntities(List<Borrow> borrows) {

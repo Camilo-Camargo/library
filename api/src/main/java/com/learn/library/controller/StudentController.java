@@ -2,7 +2,6 @@ package com.learn.library.controller;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 
 import com.opencsv.CSVReader;
@@ -10,10 +9,8 @@ import com.opencsv.exceptions.CsvException;
 
 import java.io.InputStreamReader;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -198,7 +195,7 @@ public class StudentController {
             }
 
             try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
-                String[] header = reader.readNext();
+                reader.readNext();
                 List<String[]> rows = reader.readAll();
 
                 for (String[] row : rows) {

@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -112,9 +111,14 @@ public class BorrowController {
         return ResponseEntity.ok(BorrowRes.fromEntity(borrow));
     }
 
+    @GetMapping("api/borrow/last-month")
+    public ResponseEntity<List<BorrowRes>> lastMonth() {
+        return ResponseEntity.status(HttpStatus.OK).body(BorrowRes.fromEntities(service.getAllFromLastMonth()));
+    }
+
     @PostMapping("api/borrow/pdf")
     public ResponseEntity<byte[]> createPdf() {
-        List<Borrow> borrows = service.findAll();
+        List<Borrow> borrows = service.getAllFromLastMonth();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         Document document = new Document();
