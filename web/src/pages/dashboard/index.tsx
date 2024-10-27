@@ -32,11 +32,13 @@ export default function DashboardLayout() {
               isActive={location.pathname === "/students"}
             />
           )}
-          <DashboardIcon
-            onClick={() => navigate("/")}
-            icon={BookCopy}
-            isActive={location.pathname === "/"}
-          />
+          {user!.role === "admin" &&
+            <DashboardIcon
+              onClick={() => navigate("/")}
+              icon={BookCopy}
+              isActive={location.pathname === "/"}
+            />
+          }
           <DashboardIcon
             onClick={() => navigate("/borrows")}
             icon={BookMarked}
@@ -95,18 +97,16 @@ export function DashboardIcon(props: DashboardIconProps) {
   return (
     <div
       onClick={props.onClick}
-      className={`flex w-12 ${
-        props.isActive ? "border border-primary rounded" : ""
-      } p-2 items-center justify-center`}
+      className={`flex w-12 ${props.isActive ? "border border-primary rounded" : ""
+        } p-2 items-center justify-center`}
     >
       <props.icon
-        className={`${
-          props.isActive
+        className={`${props.isActive
             ? "text-primary"
             : props.color
-            ? props.color
-            : "text-gray"
-        }`}
+              ? props.color
+              : "text-gray"
+          }`}
       />
     </div>
   );

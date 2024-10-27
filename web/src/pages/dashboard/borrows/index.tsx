@@ -78,7 +78,7 @@ export function Borrows() {
   };
 
   useEffect(() => {
-    if (user?.role === "admin") {
+    if (user?.role === "admin" || user?.role === "bibliotecaria") {
       fetchBooks();
       fetchStudents();
     }
@@ -106,7 +106,7 @@ export function Borrows() {
 
   return (
     <div className="flex flex-col h-full w-full gap-4 p-4 md:p-6">
-      {user?.role === "admin" && (
+      {user?.role === "admin" || user?.role === "bibliotecaria" && (
         <div className="flex items-center mb-4 flex-wrap">
           <label htmlFor="student-search" className="mr-2">Search Student:</label>
           <input
@@ -134,7 +134,7 @@ export function Borrows() {
         </div>
       )}
 
-      {user?.role === "admin" && selectedStudentId && (
+      {user?.role === "admin" || user?.role === "bibliotecaria" && selectedStudentId && (
         <div className="flex flex-col gap-2 mb-4">
           <h3 className="font-bold">Borrow Book:</h3>
           <input

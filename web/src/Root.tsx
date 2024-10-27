@@ -9,6 +9,7 @@ export default function Root() {
   const router = createBrowserRouter([
     {
       path: "/",
+      //@ts-ignore
       element: <DashboardLayout />,
       children: [
         {
