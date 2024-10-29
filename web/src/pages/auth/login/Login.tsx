@@ -39,10 +39,20 @@ export default function Login() {
   };
 
   return (
-    <div className="flex w-screen h-screen">
-      <div className="flex flex-col m-auto gap-10">
+    <div className="flex w-screen h-screen relative">
+      <img
+        src={Logo}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] opacity-5 pointer-events-none"
+        alt="background-logo"
+      />
+
+      <div className="flex flex-col m-auto gap-10 z-10">
         <div className="flex flex-col justify-center items-center">
-          <img src={Logo} className="w-14 h-14" alt="logo"></img>
+          <img
+            src={Logo}
+            className="w-14 h-14 rounded-full border"
+            alt="logo"
+          ></img>
           <h1 className="font-thin">{language.SCHOOL_NAME}</h1>
           <h2 className="font-bold">{language.LIBRARY_NAME}</h2>
         </div>

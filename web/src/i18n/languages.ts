@@ -180,7 +180,7 @@ export const EN: LanguageStrings = {
 
   // Library Name
   LIBRARY_NAME: "Library",
-  SCHOOL_NAME: "Colegio Soraca",
+  SCHOOL_NAME: "Institución Educativa Simón Bolívar de Soracá",
 
   // Placeholders
   NA: "N/A",
@@ -279,7 +279,7 @@ export const ES: LanguageStrings = {
 
   // Library Name
   LIBRARY_NAME: "Biblioteca",
-  SCHOOL_NAME: "Colegio Soraca",
+  SCHOOL_NAME: "Institución Educativa Simón Bolívar de Soracá",
 
   // Placeholders
   NA: "N/D",
