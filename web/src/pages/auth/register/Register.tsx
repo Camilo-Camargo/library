@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleUpload } from "../../../utils/Handlers";
 import { apiPostFormData } from "../../../services/api";
+import { useLanguage } from "../../../i18n/LanguageContext";
 
 export default function Register() {
+  const { language } = useLanguage();
   const [fullname, setFullname] = useState("");
   const [identification, setIdentification] = useState("");
   const [grade, setGrade] = useState("");
@@ -26,7 +28,7 @@ export default function Register() {
     const res = await apiPostFormData("/api/register", formData);
     const resJson = await res.json();
     if (resJson.id) {
-      navigate("/home", { state: resJson });
+      navigate("/", { state: resJson });
     }
   };
 
@@ -38,6 +40,7 @@ export default function Register() {
             <img
               className="w-16 h-16 m-auto rounded-full object-cover"
               src={URL.createObjectURL(profileImage)}
+              alt={language.PHOTO}
             />
           )}
           {!profileImage && (
@@ -48,28 +51,28 @@ export default function Register() {
                 setProfileImage((await handleUpload()) as File);
               }}
             >
-              <span className="font-bold">Image</span>
+              <span className="font-bold">{language.IMAGE}</span>
             </div>
           )}
         </div>
 
         <input
           className="focus:outline-none border p-1 rounded focus:ring-1"
-          placeholder="Full name"
+          placeholder={language.STUDENT_FULLNAME}
           onChange={(e) => {
             setFullname(e.target.value);
           }}
         />
         <input
           className="focus:outline-none border p-1 rounded focus:ring-1"
-          placeholder="Identification"
+          placeholder={language.STUDENT_IDENTIFICATION}
           onChange={(e) => {
             setIdentification(e.target.value);
           }}
         />
         <input
           className="focus:outline-none border p-1 rounded focus:ring-1"
-          placeholder="Grade"
+          placeholder={language.STUDENT_GRADE}
           type="number"
           max={12}
           min={0}
@@ -79,7 +82,7 @@ export default function Register() {
         />
         <input
           className="focus:outline-none border p-1 rounded focus:ring-1"
-          placeholder="Password"
+          placeholder={language.PASSWORD}
           type="password"
           onChange={(e) => {
             setPassword(e.target.value);
@@ -98,7 +101,7 @@ export default function Register() {
           className="border rounded p-2 bg-slate-900 text-slate-50 font-bold hover:bg-slate-700"
           onClick={handleRegister}
         >
-          Register
+          {language.REGISTER}
         </button>
         <button
           className="border p-2"
@@ -106,7 +109,7 @@ export default function Register() {
             navigate("/login");
           }}
         >
-          Login
+          {language.LOGIN}
         </button>
       </div>
     </div>

@@ -5,16 +5,20 @@ import { UserAtom } from "../../../storage/global";
 import { Book } from "../../../types/book";
 import { BookItem } from "../components/Book";
 import { Counter } from "../../../components/Counter";
+import { useLanguage } from "../../../i18n/LanguageContext";
 
 export function Borrows() {
+  const { language } = useLanguage();
   const [user] = useAtom(UserAtom);
   const [books, setBooks] = useState<Book[]>([]);
   const [students, setStudents] = useState<any[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<number | undefined>();
+  const [selectedStudentId, setSelectedStudentId] = useState<
+    number | undefined
+  >();
   const [selectedBookId, setSelectedBookId] = useState<number | undefined>();
   const [returnDate, setReturnDate] = useState("");
   const [borrowedBooks, setBorrowedBooks] = useState<Book[]>([]);
-  const [observations, setObservations] = useState(""); // Fixed the typo here
+  const [observations, setObservations] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [studentSearch, setStudentSearch] = useState("");
   const [bookSearch, setBookSearch] = useState("");
@@ -53,14 +57,15 @@ export function Borrows() {
   };
 
   const handleBorrowBook = async () => {
-    if (!selectedStudentId || !selectedBookId || !returnDate || quantity <= 0) return;
+    if (!selectedStudentId || !selectedBookId || !returnDate || quantity <= 0)
+      return;
 
     const res = await apiPost("/api/borrow", {
       studentId: selectedStudentId,
       bookId: selectedBookId,
       quantity,
       returnDate,
-      observations, // Include observations here
+      observations,
     });
 
     if (res.ok) {
@@ -74,7 +79,7 @@ export function Borrows() {
     setSelectedBookId(undefined);
     setReturnDate("");
     setQuantity(1);
-    setObservations(""); // Reset observations as well
+    setObservations("");
   };
 
   useEffect(() => {
@@ -84,47 +89,56 @@ export function Borrows() {
     }
   }, [user]);
 
-  const filteredStudents = students.filter(student =>
-    student.fullname.toLowerCase().includes(studentSearch.toLowerCase())
+  const filteredStudents = students.filter((student) =>
+    student.fullname.toLowerCase().includes(studentSearch.toLowerCase()),
   );
 
-  const filteredBooks = books.filter(book =>
-    book.title.toLowerCase().includes(bookSearch.toLowerCase())
+  const filteredBooks = books.filter((book) =>
+    book.title.toLowerCase().includes(bookSearch.toLowerCase()),
   );
 
   useEffect(() => {
-    if (selectedStudentId && !filteredStudents.some(s => s.id === selectedStudentId)) {
+    if (
+      selectedStudentId &&
+      !filteredStudents.some((s) => s.id === selectedStudentId)
+    ) {
       setSelectedStudentId(undefined);
     }
   }, [studentSearch, filteredStudents, selectedStudentId]);
 
   useEffect(() => {
-    if (selectedBookId && !filteredBooks.some(b => b.id === selectedBookId)) {
+    if (selectedBookId && !filteredBooks.some((b) => b.id === selectedBookId)) {
       setSelectedBookId(undefined);
     }
   }, [bookSearch, filteredBooks, selectedBookId]);
 
   return (
     <div className="flex flex-col h-full w-full gap-4 p-4 md:p-6">
-      {user?.role === "admin" || user?.role === "bibliotecaria" && (
+      {(user?.role === "admin" || user?.role === "bibliotecaria") && (
         <div className="flex items-center mb-4 flex-wrap">
-          <label htmlFor="student-search" className="mr-2">Search Student:</label>
+          <label htmlFor="student-search" className="mr-2">
+            {language.SEARCH_STUDENTS}:
+          </label>
           <input
             type="text"
             id="student-search"
             value={studentSearch}
             onChange={(e) => setStudentSearch(e.target.value)}
             className="border p-2 rounded w-full max-w-xs mb-2"
-            placeholder="Type to search"
+            placeholder={language.SEARCH}
           />
-          <label htmlFor="student-select" className="mr-2">Select Student:</label>
+          <label htmlFor="student-select" className="mr-2">
+            {language.SELECT_STUDENT}:
+          </label>
           <select
             id="student-select"
-            value={selectedStudentId || ''}
+            value={selectedStudentId || ""}
             onChange={handleStudentChange}
             className="border p-2 rounded w-full max-w-xs mb-2"
           >
-            <option value="" disabled>Select a student</option>
+            <option value="" disabled>
+              {language.SELECT_STUDENT}
+            </option>
             {filteredStudents.map((student) => (
               <option key={student.id} value={student.id}>
                 {student.fullname}
@@ -134,58 +148,66 @@ export function Borrows() {
         </div>
       )}
 
-      {user?.role === "admin" || user?.role === "bibliotecaria" && selectedStudentId && (
-        <div className="flex flex-col gap-2 mb-4">
-          <h3 className="font-bold">Borrow Book:</h3>
-          <input
-            type="text"
-            value={bookSearch}
-            onChange={(e) => setBookSearch(e.target.value)}
-            className="border p-2 rounded mb-2"
-            placeholder="Type to search books"
-          />
-          <select
-            value={selectedBookId || ''}
-            onChange={handleBookChange}
-            className="border p-2 rounded mb-2"
-          >
-            <option value="" disabled>Select a book</option>
-            {filteredBooks.map((book) => (
-              <option key={book.id} value={book.id}>
-                {book.title} by {book.author}
+      {(user?.role === "admin" || user?.role === "bibliotecaria") &&
+        selectedStudentId && (
+          <div className="flex flex-col gap-2 mb-4">
+            <h3 className="font-bold">{language.BORROW_BOOK}:</h3>
+            <input
+              type="text"
+              value={bookSearch}
+              onChange={(e) => setBookSearch(e.target.value)}
+              className="border p-2 rounded mb-2"
+              placeholder={language.SEARCH_BOOKS}
+            />
+            <select
+              value={selectedBookId || ""}
+              onChange={handleBookChange}
+              className="border p-2 rounded mb-2"
+            >
+              <option value="" disabled>
+                {language.SELECT_OPTION}
               </option>
-            ))}
-          </select>
-          <input
-            type="date"
-            value={returnDate}
-            onChange={(e) => setReturnDate(e.target.value)}
-            className="border p-2 rounded mb-2"
-          />
-          <Counter
-            defaultValue={quantity}
-            min={1}
-            max={books.find(book => book.id === selectedBookId)?.quantity || 1}
-            onChange={setQuantity}
-          />
-          <textarea
-            value={observations}
-            onChange={(e) => setObservations(e.target.value)}
-            className="border p-2 rounded mb-2"
-            placeholder="Add observations (optional)"
-          />
-          <button
-            onClick={handleBorrowBook}
-            className="border rounded p-2 bg-slate-900 text-slate-50 font-bold hover:bg-slate-700"
-          >
-            Borrow Book
-          </button>
-        </div>
-      )}
+              {filteredBooks.map((book) => (
+                <option key={book.id} value={book.id}>
+                  {book.title} by {book.author}
+                </option>
+              ))}
+            </select>
+            <input
+              type="date"
+              value={returnDate}
+              onChange={(e) => setReturnDate(e.target.value)}
+              className="border p-2 rounded mb-2"
+            />
+            <Counter
+              defaultValue={quantity}
+              min={1}
+              max={
+                books.find((book) => book.id === selectedBookId)?.quantity || 1
+              }
+              onChange={setQuantity}
+            />
+            <textarea
+              value={observations}
+              onChange={(e) => setObservations(e.target.value)}
+              className="border p-2 rounded mb-2"
+              placeholder={language.OBSERVATIONS}
+            />
+            <button
+              onClick={handleBorrowBook}
+              className="border rounded p-2 bg-slate-900 text-slate-50 font-bold hover:bg-slate-700"
+            >
+              {language.BORROW_BOOK}
+            </button>
+          </div>
+        )}
 
       {selectedStudentId && (
         <div className="mt-4">
-          <h3 className="font-bold">Books Borrowed by {students.find(s => s.id === selectedStudentId)?.fullname}:</h3>
+          <h3 className="font-bold">
+            {language.BORROWS} -{" "}
+            {students.find((s) => s.id === selectedStudentId)?.fullname}:
+          </h3>
           <div className="flex flex-wrap gap-4 items-center justify-center">
             {borrowedBooks.map((book, index) => (
               <BookItem

@@ -9,12 +9,17 @@ import { Counter } from "../../../components/Counter";
 import { StudentItem } from "../components/Student";
 import { UserIdentificationType } from "../../../types/enum";
 import { Modal } from "../../../components/Modal";
+import { useLanguage } from "../../../i18n/LanguageContext";
+import { Loader2 } from "lucide-react";
 
 export function Students() {
   const navigate = useNavigate();
   const [user] = useAtom(UserAtom);
+  const { language } = useLanguage();
   const [students, setStudents] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
 
   const [modalCreateOpen, setModalCreateOpen] = useState(false);
   const [modalImportOpen, setModalImportOpen] = useState(false);
@@ -22,16 +27,24 @@ export function Students() {
   const [fullname, setFullname] = useState("");
   const [grade, setGrade] = useState(1);
   const [identification, setIdentification] = useState("");
-  const [identificationType, setIdentificationType] = useState<UserIdentificationType>();
+  const [identificationType, setIdentificationType] =
+    useState<UserIdentificationType>();
   const [code, setCode] = useState("");
   const [age, setAge] = useState(1);
   const [profileImage, setProfileImage] = useState<File | null>();
   const [csvFile, setCsvFile] = useState<File | null>(null);
 
   const getStudents = async () => {
-    const res = await apiGet("/api/student");
-    const resData = await res.json();
-    setStudents(resData);
+    setLoading(true);
+    try {
+      const res = await apiGet("/api/student");
+      const resData = await res.json();
+      setStudents(resData);
+    } catch (error) {
+      console.error("Failed to fetch students:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCreate = async () => {
@@ -57,15 +70,22 @@ export function Students() {
   const handleCsvUpload = async () => {
     if (!csvFile) return;
 
+    setImportLoading(true);
     const formData = new FormData();
     formData.append("files", csvFile);
 
-    const res = await apiPostFormData("/api/student/from-files", formData);
-    if (res.ok) {
-      await getStudents();
-      setModalImportOpen(false);
-    } else {
-      console.error("Error uploading CSV file");
+    try {
+      const res = await apiPostFormData("/api/student/from-files", formData);
+      if (res.ok) {
+        await getStudents();
+        setModalImportOpen(false);
+      } else {
+        console.error("Error uploading CSV file");
+      }
+    } catch (error) {
+      console.error("Failed to upload CSV:", error);
+    } finally {
+      setImportLoading(false);
     }
   };
 
@@ -77,8 +97,8 @@ export function Students() {
 
   if (!user) return null;
 
-  const filteredStudents = students.filter(student =>
-    student.fullname.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredStudents = students.filter((student) =>
+    student.fullname.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -86,7 +106,7 @@ export function Students() {
       <div className="flex flex-wrap gap-10 items-center">
         <input
           type="text"
-          placeholder="Search students by name"
+          placeholder={language.SEARCH_STUDENTS}
           className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary w-full"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -96,29 +116,37 @@ export function Students() {
             className="border rounded-lg p-2 bg-primary text-white font-bold hover:bg-primary-dark w-full transition"
             onClick={() => setModalCreateOpen(true)}
           >
-            Create Student
+            {language.CREATE_STUDENT}
           </button>
           <button
             className="border rounded-lg p-2 bg-secondary text-white font-bold hover:bg-green-500 w-full transition"
             onClick={() => setModalImportOpen(true)}
           >
-            Import Students
+            {language.IMPORT_STUDENTS}
           </button>
         </div>
       </div>
 
       <div className="flex flex-col w-full gap-8 h-full overflow-y-auto">
-        {filteredStudents.map((student, key) => (
-          <StudentItem
-            onChange={async () => await getStudents()}
-            key={key}
-            data={student}
-          />
-        ))}
+        {loading ? (
+          <div className="flex justify-center items-center">
+            <Loader2 className="w-8 h-8 animate-spin" />
+          </div>
+        ) : (
+          filteredStudents.map((student, key) => (
+            <StudentItem
+              onChange={async () => await getStudents()}
+              key={key}
+              data={student}
+            />
+          ))
+        )}
       </div>
 
       <Modal isOpen={modalCreateOpen} onClose={() => setModalCreateOpen(false)}>
-        <h2 className="text-xl font-semibold mb-4">Create Student</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          {language.CREATE_STUDENT}
+        </h2>
         {profileImage && (
           <img
             className="w-[120px] h-[120px] rounded-lg object-cover border mb-2"
@@ -132,22 +160,22 @@ export function Students() {
               setProfileImage((await handleUpload()) as File);
             }}
           >
-            <span className="font-bold">Upload Photo</span>
+            <span className="font-bold">{language.UPLOAD_PHOTO}</span>
           </div>
         )}
         <input
           className="border p-2 rounded-lg mb-2 w-full"
-          placeholder="Full name"
+          placeholder={language.STUDENT_FULLNAME}
           onChange={(e) => setFullname(e.target.value)}
         />
         <input
           className="border p-2 rounded-lg mb-2 w-full"
-          placeholder="Code"
+          placeholder={language.STUDENT_CODE}
           onChange={(e) => setCode(e.target.value)}
         />
         <input
           className="border p-2 rounded-lg mb-2 w-full"
-          placeholder="Age"
+          placeholder={language.STUDENT_AGE}
           type="number"
           min={1}
           max={100}
@@ -155,16 +183,20 @@ export function Students() {
         />
         <input
           className="border p-2 rounded-lg mb-2 w-full"
-          placeholder="Identification"
+          placeholder={language.STUDENT_IDENTIFICATION}
           onChange={(e) => setIdentification(e.target.value)}
         />
         <select
           id="user-identification-type"
-          value={identificationType || ''}
+          value={identificationType || ""}
           className="border p-2 rounded-lg mb-2 w-full"
-          onChange={(e) => setIdentificationType(e.target.value as UserIdentificationType)}
+          onChange={(e) =>
+            setIdentificationType(e.target.value as UserIdentificationType)
+          }
         >
-          <option value="" disabled>Select User Identification Type</option>
+          <option value="" disabled>
+            {language.SELECT_IDENTIFICATION_TYPE}
+          </option>
           {Object.values(UserIdentificationType).map((type) => (
             <option key={type} value={type}>
               {type}
@@ -172,19 +204,21 @@ export function Students() {
           ))}
         </select>
         <div className="flex flex-col mb-2">
-          <span>Grade</span>
+          <span>{language.STUDENT_GRADE}</span>
           <Counter min={1} max={12} onChange={(c) => setGrade(c)} />
         </div>
         <button
           className="border rounded-lg p-2 bg-primary text-white font-bold hover:bg-primary-dark w-full transition"
           onClick={handleCreate}
         >
-          Create
+          {language.CREATE}
         </button>
       </Modal>
 
       <Modal isOpen={modalImportOpen} onClose={() => setModalImportOpen(false)}>
-        <h2 className="text-xl font-semibold mb-4">Import Students from CSV</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          {language.IMPORT_STUDENTS_CSV}
+        </h2>
         <input
           type="file"
           accept=".csv"
@@ -196,10 +230,18 @@ export function Students() {
           }}
         />
         <button
-          className="border rounded-lg p-2 bg-secondary text-white font-bold hover:bg-green-500 w-full transition"
+          className="border rounded-lg p-2 bg-secondary text-white font-bold hover:bg-green-500 w-full transition flex justify-center items-center gap-2"
           onClick={handleCsvUpload}
+          disabled={importLoading}
         >
-          Import
+          {importLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {language.LOADING}
+            </>
+          ) : (
+            language.IMPORT
+          )}
         </button>
       </Modal>
     </div>

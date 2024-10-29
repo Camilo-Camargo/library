@@ -12,6 +12,7 @@ import { Book } from "../../../types/book";
 import { handleUpload } from "../../../utils/Handlers";
 import { Button } from "../../../components/Button";
 import { Counter } from "../../../components/Counter";
+import { useLanguage } from "../../../i18n/LanguageContext";
 
 export type BookItemProps = {
   borrow?: boolean;
@@ -21,6 +22,7 @@ export type BookItemProps = {
 
 export function BookItem(props: BookItemProps) {
   const [user] = useAtom(UserAtom);
+  const { language } = useLanguage();
 
   const [title, setTitle] = useState(props.data.title);
   const [author, setAuthor] = useState(props.data.author);
@@ -28,12 +30,12 @@ export function BookItem(props: BookItemProps) {
   const [location, setLocation] = useState(props.data.location);
   const [cover, setCover] = useState<string | File>(props.data.cover);
   const [returnDate, setReturnDate] = useState<string>(
-    props.data.returnDate ?? ""
+    props.data.returnDate ?? "",
   );
 
   const onUpdate = async () => {
     const formData = new FormData();
-    formData.append("id", (props.data.id).toString());
+    formData.append("id", props.data.id.toString());
     formData.append("title", title);
     formData.append("author", author);
     formData.append("quantity", quantity.toString());
@@ -89,7 +91,7 @@ export function BookItem(props: BookItemProps) {
                 ? apiResourceUrl(cover)
                 : URL.createObjectURL(cover)
             }
-            alt="Book Cover"
+            alt={language.BOOK_TITLE}
           />
         ) : (
           <div
@@ -98,7 +100,7 @@ export function BookItem(props: BookItemProps) {
               setCover((await handleUpload()) as File);
             }}
           >
-            <span className="font-bold">Upload Cover</span>
+            <span className="font-bold">{language.UPLOAD_COVER}</span>
           </div>
         )}
       </div>
@@ -109,13 +111,13 @@ export function BookItem(props: BookItemProps) {
             <>
               <input
                 className="border rounded p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Title"
+                placeholder={language.BOOK_TITLE}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
               <input
                 className="border rounded p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Author"
+                placeholder={language.BOOK_AUTHOR}
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
               />
@@ -146,7 +148,7 @@ export function BookItem(props: BookItemProps) {
           {!props.borrow && (
             <input
               className="border rounded p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Location"
+              placeholder={language.BOOK_LOCATION}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
@@ -156,16 +158,36 @@ export function BookItem(props: BookItemProps) {
         <div className="flex gap-2 mt-4">
           {user?.role === "admin" && !props.borrow ? (
             <>
-              <Button title="Update" onClick={onUpdate} variant="primary" />
-              <Button title="Delete" onClick={onDelete} variant="danger-border" />
+              <Button
+                title={language.UPDATE}
+                onClick={onUpdate}
+                variant="primary"
+              />
+              <Button
+                title={language.DELETE}
+                onClick={onDelete}
+                variant="danger-border"
+              />
             </>
           ) : props.borrow ? (
             <>
-              <Button title="Update" onClick={onBorrowUpdate} variant="primary-border" />
-              <Button title="Unreserve" onClick={onUnreserve} variant="danger-border" />
+              <Button
+                title={language.UPDATE}
+                onClick={onBorrowUpdate}
+                variant="primary-border"
+              />
+              <Button
+                title={language.UNRESERVE}
+                onClick={onUnreserve}
+                variant="danger-border"
+              />
             </>
           ) : (
-            <Button title="Reserve" onClick={onReserve} variant="secondary" />
+            <Button
+              title={language.RESERVE}
+              onClick={onReserve}
+              variant="secondary"
+            />
           )}
         </div>
       </div>

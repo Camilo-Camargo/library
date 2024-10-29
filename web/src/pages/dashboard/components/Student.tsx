@@ -9,6 +9,7 @@ import { handleUpload } from "../../../utils/Handlers";
 import { Button } from "../../../components/Button";
 import { Counter } from "../../../components/Counter";
 import { UserIdentificationType } from "../../../types/enum";
+import { useLanguage } from "../../../i18n/LanguageContext";
 
 export type StudentItemProps = {
   data: User;
@@ -16,13 +17,19 @@ export type StudentItemProps = {
 };
 
 export function StudentItem(props: StudentItemProps) {
+  const { language } = useLanguage();
   const [fullname, setFullname] = useState(props.data.fullname);
   const [code, setCode] = useState(props.data.code);
   const [age, setAge] = useState(props.data.age);
-  const [identification, setIdentification] = useState(props.data.identification);
+  const [identification, setIdentification] = useState(
+    props.data.identification,
+  );
   const [grade, setGrade] = useState(props.data.grade);
-  const [profileImage, setProfileImage] = useState<string | File>(props.data.profileImage);
-  const [identificationType, setIdentificationType] = useState<UserIdentificationType | null>(props.data.identificationType);
+  const [profileImage, setProfileImage] = useState<string | File>(
+    props.data.profileImage,
+  );
+  const [identificationType, setIdentificationType] =
+    useState<UserIdentificationType | null>(props.data.identificationType);
 
   const onUpdate = async () => {
     const formData = new FormData();
@@ -55,7 +62,11 @@ export function StudentItem(props: StudentItemProps) {
           onClick={async () => {
             setProfileImage((await handleUpload()) as File);
           }}
-          src={typeof profileImage === "string" ? apiResourceUrl(profileImage) : URL.createObjectURL(profileImage)}
+          src={
+            typeof profileImage === "string"
+              ? apiResourceUrl(profileImage)
+              : URL.createObjectURL(profileImage)
+          }
           alt="Profile"
         />
       ) : (
@@ -65,32 +76,32 @@ export function StudentItem(props: StudentItemProps) {
             setProfileImage((await handleUpload()) as File);
           }}
         >
-          <span className="font-bold">Upload Image</span>
+          <span className="font-bold">{language.UPLOAD_COVER}</span>
         </div>
       )}
 
       <div className="flex-grow">
         <input
           className="w-full border rounded p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Full Name"
+          placeholder={language.STUDENT_FULLNAME}
           value={fullname}
           onChange={(e) => setFullname(e.target.value)}
         />
         <input
           className="w-full border rounded p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Identification"
+          placeholder={language.STUDENT_IDENTIFICATION}
           value={identification}
           onChange={(e) => setIdentification(e.target.value)}
         />
         <input
           className="w-full border rounded p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Code"
+          placeholder={language.STUDENT_CODE}
           value={code}
           onChange={(e) => setCode(e.target.value)}
         />
         <input
           className="w-full border rounded p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Age"
+          placeholder={language.STUDENT_AGE}
           type="number"
           value={age}
           min={1}
@@ -99,13 +110,15 @@ export function StudentItem(props: StudentItemProps) {
         />
         <select
           id="user-identification-type"
-          value={identificationType || ''}
+          value={identificationType || ""}
           className="w-full border rounded p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           onChange={(e) => {
             setIdentificationType(e.target.value as UserIdentificationType);
           }}
         >
-          <option value="" disabled>Select Identification Type</option>
+          <option value="" disabled>
+            {language.SELECT_IDENTIFICATION_TYPE}
+          </option>
           {Object.values(UserIdentificationType).map((type) => (
             <option key={type} value={type}>
               {type}
@@ -123,8 +136,16 @@ export function StudentItem(props: StudentItemProps) {
         </div>
 
         <div className="flex justify-between">
-          <Button title="Update" onClick={onUpdate} variant="primary" />
-          <Button title="Delete" onClick={onDelete} variant="danger-border" />
+          <Button
+            title={language.UPDATE}
+            onClick={onUpdate}
+            variant="primary"
+          />
+          <Button
+            title={language.DELETE}
+            onClick={onDelete}
+            variant="danger-border"
+          />
         </div>
       </div>
     </div>

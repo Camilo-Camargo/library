@@ -5,12 +5,17 @@ import { Counter } from "../../../components/Counter";
 import { BookItem } from "../components/Book";
 import { handleUpload } from "../../../utils/Handlers";
 import { Modal } from "../../../components/Modal";
+import { useLanguage } from "../../../i18n/LanguageContext";
+import { Loader2 } from "lucide-react";
 
 export function Books() {
+  const { language } = useLanguage();
   const [books, setBooks] = useState<Book[]>([]);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
 
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
@@ -21,6 +26,7 @@ export function Books() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleCreate = async () => {
+    setLoading(true);
     const formData = new FormData();
     formData.append("title", title);
     formData.append("author", author);
@@ -30,25 +36,38 @@ export function Books() {
       formData.append("cover", cover);
     }
 
-    const res = await apiPostFormData("/api/book", formData);
-    if (res.ok) {
-      await getBooks();
-      setCreateModalOpen(false);
+    try {
+      const res = await apiPostFormData("/api/book", formData);
+      if (res.ok) {
+        await getBooks();
+        setCreateModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to create book:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUploadFiles = async () => {
+    setImportLoading(true);
     const formData = new FormData();
     files.forEach((file) => {
       formData.append("files", file);
     });
 
-    const res = await apiPostFormData("/api/book/from-files", formData);
-    if (res.ok) {
-      await getBooks();
-      setImportModalOpen(false);
-    } else {
-      console.error("Failed to upload files");
+    try {
+      const res = await apiPostFormData("/api/book/from-files", formData);
+      if (res.ok) {
+        await getBooks();
+        setImportModalOpen(false);
+      } else {
+        console.error("Failed to upload files");
+      }
+    } catch (error) {
+      console.error("Error uploading files:", error);
+    } finally {
+      setImportLoading(false);
     }
   };
 
@@ -65,9 +84,9 @@ export function Books() {
 
   useEffect(() => {
     setFilteredBooks(
-      books.filter(book =>
-        book.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      books.filter((book) =>
+        book.title.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
     );
   }, [searchQuery, books]);
 
@@ -76,7 +95,7 @@ export function Books() {
       <div className="flex flex-wrap gap-10 items-center">
         <input
           type="text"
-          placeholder="Search books by title"
+          placeholder={language.SEARCH_BOOKS}
           className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary w-full"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -86,13 +105,13 @@ export function Books() {
             className="border rounded-lg p-2 bg-primary text-white font-bold hover:bg-primary-dark w-full transition"
             onClick={() => setCreateModalOpen(true)}
           >
-            Create Book
+            {language.CREATE_BOOK}
           </button>
           <button
             className="border rounded-lg p-2 bg-secondary text-white font-bold hover:bg-green-500 w-full transition"
             onClick={() => setImportModalOpen(true)}
           >
-            Import Books from CSV
+            {language.IMPORT_BOOKS}
           </button>
         </div>
       </div>
@@ -109,51 +128,59 @@ export function Books() {
 
       <Modal isOpen={createModalOpen} onClose={() => setCreateModalOpen(false)}>
         <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-semibold mb-4">Create Book</h2>
-        <div>
-          {cover && (
-            <img
-              className="w-[180px] h-[270px] m-auto rounded-lg object-cover"
-              src={URL.createObjectURL(cover)}
-            />
-          )}
-          {!cover && (
-            <div
-              className="flex justify-center items-center bg-gray-100 text-gray-500 text-center w-[180px] h-[270px] rounded-lg m-auto border-dashed border cursor-pointer"
-              onClick={async () => setCover(await handleUpload() as File)}
-            >
-              <span className="font-bold">Upload Cover</span>
-            </div>
-          )}
-        </div>
+          <h2 className="text-xl font-semibold mb-4">{language.CREATE_BOOK}</h2>
+          <div>
+            {cover && (
+              <img
+                className="w-[180px] h-[270px] m-auto rounded-lg object-cover"
+                src={URL.createObjectURL(cover)}
+              />
+            )}
+            {!cover && (
+              <div
+                className="flex justify-center items-center bg-gray-100 text-gray-500 text-center w-[180px] h-[270px] rounded-lg m-auto border-dashed border cursor-pointer"
+                onClick={async () => setCover((await handleUpload()) as File)}
+              >
+                <span className="font-bold">{language.UPLOAD_COVER}</span>
+              </div>
+            )}
+          </div>
 
-        <input
-          className="border p-2 rounded-lg mb-2 w-full"
-          placeholder="Title"
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <input
-          className="border p-2 rounded-lg mb-2 w-full"
-          placeholder="Author"
-          onChange={(e) => setAuthor(e.target.value)}
-        />
-        <Counter min={1} onChange={(c) => setQuantity(c)} />
-        <input
-          className="border p-2 rounded-lg mb-2 w-full"
-          placeholder="Location"
-          onChange={(e) => setLocation(e.target.value)}
-        />
-        <button
-          className="border rounded-lg p-2 bg-primary text-white font-bold hover:bg-primary-dark w-full transition"
-          onClick={handleCreate}
-        >
-          Create
-        </button>
+          <input
+            className="border p-2 rounded-lg mb-2 w-full"
+            placeholder={language.BOOK_TITLE}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <input
+            className="border p-2 rounded-lg mb-2 w-full"
+            placeholder={language.BOOK_AUTHOR}
+            onChange={(e) => setAuthor(e.target.value)}
+          />
+          <Counter min={1} onChange={(c) => setQuantity(c)} />
+          <input
+            className="border p-2 rounded-lg mb-2 w-full"
+            placeholder={language.BOOK_LOCATION}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+          <button
+            className="border rounded-lg p-2 bg-primary text-white font-bold hover:bg-primary-dark w-full transition flex items-center justify-center gap-2"
+            onClick={handleCreate}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {language.LOADING}
+              </>
+            ) : (
+              language.CREATE
+            )}
+          </button>
         </div>
       </Modal>
 
       <Modal isOpen={importModalOpen} onClose={() => setImportModalOpen(false)}>
-        <h2 className="text-xl font-semibold mb-4">Import Books from CSV</h2>
+        <h2 className="text-xl font-semibold mb-4">{language.IMPORT_BOOKS}</h2>
         <input
           type="file"
           accept=".csv"
@@ -165,10 +192,18 @@ export function Books() {
           }}
         />
         <button
-          className="border rounded-lg p-2 bg-secondary text-white font-bold hover:bg-green-500 w-full transition mt-4"
+          className="border rounded-lg p-2 bg-secondary text-white font-bold hover:bg-green-500 w-full transition mt-4 flex items-center justify-center gap-2"
           onClick={handleUploadFiles}
+          disabled={importLoading}
         >
-          Upload
+          {importLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {language.LOADING}
+            </>
+          ) : (
+            language.UPLOAD
+          )}
         </button>
       </Modal>
     </div>

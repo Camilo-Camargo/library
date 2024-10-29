@@ -5,15 +5,30 @@ import { Books } from "./pages/dashboard/books";
 import { Borrows } from "./pages/dashboard/borrows";
 import GeneratesPage from "./pages/dashboard/generates";
 import { Students } from "./pages/dashboard/students";
+import { Home } from "./pages/dashboard/home";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import NotFound from "./pages/NotFound"; // Import NotFound component
+
 export default function Root() {
   const router = createBrowserRouter([
     {
+      path: "/login",
+      element: <Login />,
+    },
+    {
       path: "/",
-      //@ts-ignore
-      element: <DashboardLayout />,
+      element: (
+        <ProtectedRoute>
+          <DashboardLayout />
+        </ProtectedRoute>
+      ),
       children: [
         {
           path: "",
+          element: <Home />,
+        },
+        {
+          path: "books",
           element: <Books />,
         },
         {
@@ -28,11 +43,12 @@ export default function Root() {
           path: "generates",
           element: <GeneratesPage />,
         },
+       
       ],
     },
     {
-      path: "/login",
-      element: <Login />,
+      path: "*",
+      element: <NotFound />,
     },
   ]);
 
