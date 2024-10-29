@@ -59,4 +59,8 @@ public class UserService implements IUserService {
 		return this.userRepository.save(user);
 	}
 
+	@Override
+	public long count() {
+		return userRepository.count();
+	}
 }

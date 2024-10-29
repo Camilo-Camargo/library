@@ -15,11 +15,6 @@ public class LibraryApplication {
 		SpringApplication.run(LibraryApplication.class, args);
 	}
 
-	@RequestMapping("/")
-	public String forward() {
-		return "";
-	}
-
 	@Bean
 	public CorsFilter corsFilter() {
 		CorsConfiguration config = new CorsConfiguration();

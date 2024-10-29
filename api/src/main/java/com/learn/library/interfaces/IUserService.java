@@ -4,6 +4,7 @@ import java.util.List;
 import com.learn.library.model.User;
 
 public interface IUserService{
+	public long count();
 	public User login(String username, String password);
 	public User create(User user);
 	public User update(User user);
