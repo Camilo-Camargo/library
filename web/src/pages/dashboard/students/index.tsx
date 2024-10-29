@@ -119,7 +119,7 @@ export function Students() {
             {language.CREATE_STUDENT}
           </button>
           <button
-            className="border rounded-lg p-2 bg-secondary text-white font-bold hover:bg-green-500 w-full transition"
+            className="border rounded-lg p-2 bg-danger text-white font-bold hover:bg-green-500 w-full transition"
             onClick={() => setModalImportOpen(true)}
           >
             {language.IMPORT_STUDENTS}

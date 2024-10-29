@@ -13,7 +13,7 @@ import { UserAtom } from "../../storage/global";
 import { apiResourceUrl } from "../../services/api";
 import { useLanguage } from "../../i18n/LanguageContext";
 
-export default function DashboardLayout() {
+export function DashboardLayout() {
   const [user, setUser] = useAtom(UserAtom);
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,7 +23,7 @@ export default function DashboardLayout() {
     if (!user) navigate("/login");
   }, [user]);
 
-  if (!user) return;
+  if (!user) return null;
 
   const logOutHandler = () => {
     localStorage.removeItem("user");

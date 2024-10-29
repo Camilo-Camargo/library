@@ -108,7 +108,7 @@ export function Books() {
             {language.CREATE_BOOK}
           </button>
           <button
-            className="border rounded-lg p-2 bg-secondary text-white font-bold hover:bg-green-500 w-full transition"
+            className="border rounded-lg p-2 bg-danger text-white font-bold hover:bg-green-500 w-full transition"
             onClick={() => setImportModalOpen(true)}
           >
             {language.IMPORT_BOOKS}
