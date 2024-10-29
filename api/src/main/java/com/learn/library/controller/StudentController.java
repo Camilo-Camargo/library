@@ -3,6 +3,8 @@ package com.learn.library.controller;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
@@ -170,7 +172,7 @@ public class StudentController {
 
         String username = userService.generateUsername(fullname, identification);
 
-        User user = new User(identification, identificationType, fullname, username, null, "student", age,imagePath);
+        User user = new User(identification, identificationType, fullname, username, null, "student", age, imagePath);
         userService.create(user);
 
         Student student = new Student();
@@ -195,14 +197,20 @@ public class StudentController {
             }
 
             try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
-                reader.readNext();
-                List<String[]> rows = reader.readAll();
+                // Read the header
+                String[] headers = reader.readNext();
+                if (headers == null || headers.length < 6 || !validateStudentColumns(headers)) {
+                    // Invalid CSV format, return an error response
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                }
 
+                List<String[]> rows = reader.readAll();
                 for (String[] row : rows) {
                     if (row.length < 6) {
                         continue;
                     }
 
+                    // Proceed with student CSV processing (same as before)
                     String fullname = row[0].trim();
                     String[] identificationAttrs = row[1].trim().replace(".", "").split(" ");
 
@@ -221,15 +229,7 @@ public class StudentController {
                         case "CC":
                             identificationType = UserIdentificationType.CC;
                             break;
-                        case "PPT":
-                            identificationType = UserIdentificationType.PPT;
-                            break;
-                        case "NES":
-                            identificationType = UserIdentificationType.NES;
-                            break;
-                        case "NAN":
-                            identificationType = UserIdentificationType.NAN;
-                            break;
+                        // Add other cases as needed
                         default:
                             continue;
                     }
@@ -245,10 +245,12 @@ public class StudentController {
                         continue;
                     }
 
+                    // Process student information and update or create as needed
                     Student existingStudent = service.findByCode(code);
                     User user;
 
                     if (existingStudent != null) {
+                        // Update existing student
                         user = existingStudent.getUser();
                         user.setFullname(fullname);
                         user.setIdentification(identification);
@@ -259,9 +261,10 @@ public class StudentController {
                         existingStudent.setGrade(grade);
                         service.update(existingStudent);
                     } else {
+                        // Create new student
                         String username = userService.generateUsername(fullname, identification);
-                        user = new User(identification, identificationType, fullname, username, null, "student", age,null);
-                        user.setAge(age);
+                        user = new User(identification, identificationType, fullname, username, null, "student", age,
+                                null);
                         userService.create(user);
 
                         Student newStudent = new Student();
@@ -280,4 +283,28 @@ public class StudentController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    private boolean validateStudentColumns(String[] headers) {
+        if (headers.length != 6)
+            return false;
+
+        String estudiantesPattern = ".*\\bESTUDIANTES\\b.*";
+        String identificacionPattern = ".*\\bIDENTIFICACION\\b.*";
+        String edadPattern = ".*\\bEDAD\\b.*";
+        String telefonoPattern = ".*\\bTELEFONO\\b.*";
+        String codigoPattern = ".*\\bCODIGO\\b.*";
+
+        boolean isEstudiantesValid = matchRegex(headers[0], estudiantesPattern);
+        boolean isIdentificacionValid = matchRegex(headers[1], identificacionPattern);
+        boolean isEdadValid = matchRegex(headers[2], edadPattern);
+        boolean isTelefonoValid = matchRegex(headers[3], telefonoPattern);
+        boolean isCodigoValid = matchRegex(headers[4], codigoPattern);
+
+        return isEstudiantesValid && isIdentificacionValid && isEdadValid && isTelefonoValid && isCodigoValid;
+    }
+
+    private boolean matchRegex(String input, String pattern) {
+        Pattern compiledPattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = compiledPattern.matcher(input.trim());
+        return matcher.matches();
+    }
 }

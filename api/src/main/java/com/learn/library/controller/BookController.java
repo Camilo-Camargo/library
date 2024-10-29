@@ -5,7 +5,8 @@ import com.opencsv.exceptions.CsvException;
 
 import java.io.InputStreamReader;
 import java.util.List;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.IOException;
 import java.time.Instant;
 
@@ -157,7 +158,10 @@ public class BookController {
             }
 
             try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream()))) {
-                reader.readNext();
+                String[] headers = reader.readNext();
+                if (headers == null || !validateBookColumns(headers)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                }
 
                 List<String[]> rows = reader.readAll();
 
@@ -168,24 +172,46 @@ public class BookController {
 
                     String author = row[0].trim();
                     String title = row[1].trim();
-                    int quantity = Integer.parseInt(row[2].trim());
+                    int quantity;
 
-                    String coverPath = "/default/path/to/cover.jpg";
-                    String location = "Default Location";
+                    try {
+                        quantity = Integer.parseInt(row[2].trim());
+                    } catch (NumberFormatException e) {
+                        return ResponseEntity.badRequest().build();
+                    }
+
+                    String coverPath = "";
+                    String location = "";
 
                     Book book = new Book(title, author, coverPath, quantity, location);
                     service.create(book);
                 }
             } catch (IOException | CsvException e) {
-                System.err.println("Error reading CSV file: " + e.getMessage());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-            } catch (NumberFormatException e) {
-                System.err.println("Invalid quantity in CSV: " + e.getMessage());
-                return ResponseEntity.badRequest().build();
             }
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    private boolean validateBookColumns(String[] headers) {
+        if (headers.length != 3)
+            return false;
+
+        String autorPattern = ".*\\bAutor\\b.*";
+        String tituloPattern = ".*\\bTítulo\\b.*";
+        String cantidadPattern = ".*\\bCantidad\\b.*";
+
+        boolean isAutorValid = matchRegex(headers[0], autorPattern);
+        boolean isTituloValid = matchRegex(headers[1], tituloPattern);
+        boolean isCantidadValid = matchRegex(headers[2], cantidadPattern);
+        return isAutorValid && isTituloValid && isCantidadValid;
+    }
+
+    private boolean matchRegex(String input, String pattern) {
+        Pattern compiledPattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = compiledPattern.matcher(input.trim());
+        return matcher.matches();
     }
 
     @DeleteMapping("api/book")

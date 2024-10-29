@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.learn.library.model.Borrow;
+import com.learn.library.model.BorrowState;
 import com.learn.library.dto.book.BookRes;
 import com.learn.library.dto.student.StudentRes;
 
@@ -27,6 +28,7 @@ public class BorrowRes {
     private LocalDate returnedAt;
     private LocalDate returnDate;
     private String observations;
+    private BorrowState state;
 
     public static BorrowRes fromEntity(Borrow borrow) {
         return new BorrowRes(
@@ -40,7 +42,8 @@ public class BorrowRes {
                 borrow.getBorrowDate(),
                 borrow.getReturnedAt(),
                 borrow.getReturnDate(),
-                borrow.getObservations());
+                borrow.getObservations(),
+                borrow.getState());
     }
 
     public static List<BorrowRes> fromEntities(List<Borrow> borrows) {
